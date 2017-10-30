@@ -41,5 +41,20 @@
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/variants/eightanaloginputs</locationURI>
 		</link>
+		<link>
+			<name>libraries/BinarySerial</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/BinarySerial</location>
+		</link>
+		<link>
+			<name>libraries/HcSr04</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/HcSr04</location>
+		</link>
+		<link>
+			<name>libraries/Led</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Led</location>
+		</link>
 	</linkedResources>
 </projectDescription>

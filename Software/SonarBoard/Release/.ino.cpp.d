@@ -11,7 +11,9 @@
  C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\cores\arduino/Arduino.h \
  C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\variants\eightanaloginputs/pins_arduino.h \
  C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\variants\eightanaloginputs/../standard/pins_arduino.h \
- ..\SonarBoard.ino
+ C:\Users\Dan_2\Desktop\ArduinoLibs\HcSr04/HcSr04.h \
+ C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h \
+ C:\Users\Dan_2\Desktop\ArduinoLibs\Led/Led.h ..\SonarBoard.ino
 
 C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\cores\arduino/Arduino.h:
 
@@ -36,5 +38,11 @@ C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\cores\arduino/Ardu
 C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\variants\eightanaloginputs/pins_arduino.h:
 
 C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\variants\eightanaloginputs/../standard/pins_arduino.h:
+
+C:\Users\Dan_2\Desktop\ArduinoLibs\HcSr04/HcSr04.h:
+
+C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h:
+
+C:\Users\Dan_2\Desktop\ArduinoLibs\Led/Led.h:
 
 ..\SonarBoard.ino:
