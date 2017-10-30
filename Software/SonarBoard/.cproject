@@ -18,9 +18,12 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.1244798450" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
 							<builder buildPath="${workspace_loc:/SonarBoard}/Release" id="io.sloeber.sketch.builder.1011275808" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Arduino sketch builder" superClass="io.sloeber.sketch.builder"/>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.1198583276" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
-								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.373392214" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.373392214" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/libraries/HcSr04}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/libraries/BinarySerial}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/libraries/Led}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.1259261286" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -28,6 +31,9 @@
 								<option id="io.sloeber.compiler.c.sketch.option.incpath.737128431" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/HcSr04}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/BinarySerial}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/Led}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.647211082" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -35,6 +41,9 @@
 								<option id="io.sloeber.compiler.asm.sketch.option.incpath.1391005836" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/HcSr04}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/BinarySerial}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SonarBoard/Led}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.761168453" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
