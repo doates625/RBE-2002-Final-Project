@@ -7,6 +7,8 @@
 //!a RBE-2002 B17 Team 10
 
 #include "Arduino.h"
+#include "MotorL.h"
+#include "MotorR.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS

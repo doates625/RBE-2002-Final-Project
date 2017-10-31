@@ -18,9 +18,13 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.160992757" name="Arduino Target" osList="all" superClass="io.sloeber.targetplatform"/>
 							<builder buildPath="${workspace_loc:/MainBoard}/Release" id="io.sloeber.sketch.builder.1350889881" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Arduino sketch builder" superClass="io.sloeber.sketch.builder"/>
 							<tool id="io.sloeber.tool.sketch.compiler.cpp.949497868" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
-								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.274294799" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+								<option id="io.sloeber.compiler.cpp.sketch.option.incpath.274294799" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/DcMotor}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MotorL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MotorR}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.1213989556" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -28,6 +32,7 @@
 								<option id="io.sloeber.compiler.c.sketch.option.incpath.451874573" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/DcMotor}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.1776239148" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -35,6 +40,7 @@
 								<option id="io.sloeber.compiler.asm.sketch.option.incpath.1456998894" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/DcMotor}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.2095308429" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>
@@ -60,4 +66,5 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope"/>
 </cproject>

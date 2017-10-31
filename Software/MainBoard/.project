@@ -41,5 +41,10 @@
 			<type>2</type>
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/variants/mega</locationURI>
 		</link>
+		<link>
+			<name>libraries/DcMotor</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/DcMotor</location>
+		</link>
 	</linkedResources>
 </projectDescription>

@@ -3,3 +3,5 @@
 /objects.mk
 /sources.mk
 /subdir.mk
+/Namespaces/
+/libraries/
