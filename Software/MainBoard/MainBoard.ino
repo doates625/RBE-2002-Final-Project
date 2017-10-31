@@ -9,6 +9,7 @@
 #include "Arduino.h"
 #include "MotorL.h"
 #include "MotorR.h"
+#include "Odometer.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
