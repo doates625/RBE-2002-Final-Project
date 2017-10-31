@@ -15,9 +15,10 @@
 // ARDUINO WIRING FORMAT
 //*************************************************************//
 
-const uint8_t PIN_SONAR_F = 11;
-const uint8_t PIN_SONAR_B = 10;
-const uint8_t PIN_SONAR_ECHO = 9;
+const uint8_t PIN_SONAR_F_T = 11;
+const uint8_t PIN_SONAR_F_E = 9;
+const uint8_t PIN_SONAR_B_T = 10;
+const uint8_t PIN_SONAR_B_E = 8;
 const uint8_t PIN_LED = 13;
 
 //*************************************************************//
@@ -36,8 +37,8 @@ const byte BYTE_READY = 0x52; // "R"
 
 Led led(PIN_LED);
 
-HcSr04 sonarF(PIN_SONAR_F, PIN_SONAR_ECHO);
-HcSr04 sonarB(PIN_SONAR_B, PIN_SONAR_ECHO);
+HcSr04 sonarF(PIN_SONAR_F_T, PIN_SONAR_F_E);
+HcSr04 sonarB(PIN_SONAR_B_T, PIN_SONAR_B_E);
 
 BinarySerial binSerial(*serial, BAUD);
 
@@ -80,9 +81,7 @@ void setup() {
 void loop() {
 	distF = sonarF.dist();
 	distB = sonarB.dist();
-	while(!binSerial.available());
-	if(binSerial.readByte() == BYTE_READY) {
-		serial->println("F: " + String(distF));
-		serial->println("B: " + String(distB));
-	}
+	serial->println("F: " + String(distF));
+	serial->println("B: " + String(distB));
+	delay(250);
 }
