@@ -27,7 +27,7 @@ void setup() {
 
 //!b Executes repeatedly after Arduino reset.
 //!d Tasks:
-//!d - None
+//!d - Loop Matlab communication.
 void loop() {
-
+	MatlabComms::loop();
 }

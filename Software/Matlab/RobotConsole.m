@@ -9,7 +9,6 @@ clear vars; clc
 BLUETOOTH_NAME = 'Arduino';
 BLUETOOTH_CHANNEL = 1;
 BYTE_BEGIN = hex2dec('01');
-BYTE_RESET = hex2dec('02');
 BYTE_UPDATE = hex2dec('03');
 
 % Shortcuts
@@ -30,22 +29,11 @@ if ~exist('serial', 'var')
     serial = ArduinoSerial(bluetooth);
 end
 
-% Initialize Xbox controller
-xbox = XboxController(1, 0.07, 2);
-
 % Connect to Bluetooth
 disp(['Connecting to "' BLUETOOTH_NAME '" ...'])
 if serial.open()
     disp('Connected!')
-    disp('Press ''Start'' to begin')
-    disp('Press ''Back'' to end program')
-    switch xbox.waitForInput({'Start', 'Back'})
-        case 'Start'
-            serial.writeByte(BYTE_START);
-        case 'Back'
-            serial.writeByte(BYTE_RESET);
-            serial.close();
-    end
+    serial.writeByte(BYTE_BEGIN);
 else
     disp('Connection failed!')
     return
@@ -55,23 +43,31 @@ end
 
 % Communication loop
 while 1
-    
-    % Back button resets Arduino and ends program
-    if xbox.Back()
-        serial.writeByte(BYTE_RESET);
-        serial.close();
-        disp('Program terminated.')
-        pause(1)
-        break
-    end
-    
     % Get heading
     serial.writeByte(BYTE_UPDATE);
-    serial.wait(4);
-    heading = serial.readFloat();
+    serial.wait(8);
+    t = double(serial.readFloat());
+    h = double(serial.readFloat());
     
-    % Display heading
+    % Display time and heading
     clc
     disp(['RobotConsole' NL])
-    disp(['Heading: ' num2str(heading)])
+    disp(['Time: ' num2str(t, '%.2f') 's'])
+    disp(['Heading: ' num2str(h, '%.3f') 'rad'])
+    
+    % Graph heading
+    x = sin(h);
+    y = cos(h);
+    figure(1)
+    hold off
+    plot([0 x], [0 y], 'color', 'b', 'linewidth', 2)
+    hold on
+    text(1.05*x, 1.05*y, 'Heading')
+    title('Robot Console')
+    xlabel('Field x')
+    ylabel('Field y')
+    axis equal
+    axis([-1.1, 1.1, -1.1, 1.1])
+    grid on
+    drawnow
 end

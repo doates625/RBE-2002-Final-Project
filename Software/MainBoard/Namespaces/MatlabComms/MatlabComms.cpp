@@ -28,13 +28,10 @@ namespace MatlabComms {
 void MatlabComms::setup() {
 	IndicatorLed::setup();
 	Odometer::setup();
-	digitalWrite(PIN_RESET, HIGH);
-	pinMode(PIN_RESET, OUTPUT);
 	bs.setup();
 	bs.wait();
-	if(bs.readByte() == BYTE_BEGIN) {
+	if(bs.readByte() == BYTE_BEGIN)
 		return;
-	}
 	else
 		IndicatorLed::flash();
 }
@@ -43,19 +40,12 @@ void MatlabComms::setup() {
 void MatlabComms::loop() {
 	if(bs.available()) {
 		switch(bs.readByte()) {
-			case BYTE_RESET:
-				resetArduino();
-				break;
 			case BYTE_UPDATE:
+				bs.writeFloat(clockTime());
 				bs.writeFloat(Odometer::heading());
 				break;
 			default:
 				break;
 		}
 	}
-}
-
-//!b Resets the Arduino board.
-void MatlabComms::resetArduino() {
-	digitalWrite(PIN_RESET, LOW);
 }
