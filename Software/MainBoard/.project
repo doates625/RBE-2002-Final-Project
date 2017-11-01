@@ -42,6 +42,11 @@
 			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/variants/mega</locationURI>
 		</link>
 		<link>
+			<name>libraries/BinarySerial</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/BinarySerial</location>
+		</link>
+		<link>
 			<name>libraries/Bno055</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Bno055</location>
@@ -52,14 +57,29 @@
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/DcMotor</location>
 		</link>
 		<link>
+			<name>libraries/Hc06</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Hc06</location>
+		</link>
+		<link>
 			<name>libraries/ISquaredC</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/ISquaredC</location>
 		</link>
 		<link>
+			<name>libraries/Led</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Led</location>
+		</link>
+		<link>
 			<name>libraries/LinearAtmel</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/LinearAtmel/LinearAtmel</location>
+		</link>
+		<link>
+			<name>libraries/Timer</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Timer</location>
 		</link>
 		<link>
 			<name>libraries/Wire</name>

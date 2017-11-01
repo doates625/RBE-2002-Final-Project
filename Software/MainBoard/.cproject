@@ -39,6 +39,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/MatBinaryExpr/MatHcat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/Mat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/IndicatorLed}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MatlabComms}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/Odometer}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MotorL}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MotorR}&quot;"/>
@@ -46,6 +48,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/ISquaredC}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/BinarySerial}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Hc06}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Led}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Timer}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.1213989556" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -53,8 +59,6 @@
 								<option id="io.sloeber.compiler.c.sketch.option.incpath.451874573" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/LinearAtmel}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/ISquaredC}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire/src}&quot;"/>
 								</option>
@@ -64,8 +68,6 @@
 								<option id="io.sloeber.compiler.asm.sketch.option.incpath.1456998894" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/LinearAtmel}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/ISquaredC}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire/src}&quot;"/>
 								</option>
@@ -93,5 +95,9 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/MainBoard"/>
+		</configuration>
+	</storageModule>
 </cproject>
