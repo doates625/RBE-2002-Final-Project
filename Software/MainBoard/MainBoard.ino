@@ -12,6 +12,7 @@
 #include "MotorR.h"
 #include "Odometer.h"
 #include "MatlabComms.h"
+#include "SonarComms.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
@@ -22,12 +23,19 @@
 //!d - Initialize odometer.
 //!d - Initialize Matlab communication over Bluetooth.
 void setup() {
-	MatlabComms::setup();
+	Serial.begin(115200);
+	SonarComms::setup();
 }
 
 //!b Executes repeatedly after Arduino reset.
 //!d Tasks:
 //!d - Loop Matlab communication.
 void loop() {
-	MatlabComms::loop();
+	SonarComms::loop();
+	using namespace SonarComms;
+	Serial.println("F: " + String(distF));
+	// Serial.println("B: " + String(distB));
+	// Serial.println("L: " + String(distL));
+	// Serial.println("R: " + String(distR));
+	delay(250);
 }

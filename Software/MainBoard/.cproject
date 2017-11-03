@@ -39,6 +39,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/MatBinaryExpr/MatHcat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/Mat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/SonarComms}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/IndicatorLed}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/MatlabComms}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/Odometer}&quot;"/>

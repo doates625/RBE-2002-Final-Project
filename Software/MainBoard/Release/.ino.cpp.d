@@ -20,6 +20,7 @@
  C:\Users\Dan_2\Desktop\ArduinoLibs\Hc06/Hc06.h \
  C:\Users\Dan_2\Desktop\ArduinoLibs\Timer/Timer.h \
  C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h \
+ C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\SonarComms/SonarComms.h \
  ..\MainBoard.ino
 
 C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\cores\arduino/Arduino.h:
@@ -63,5 +64,7 @@ C:\Users\Dan_2\Desktop\ArduinoLibs\Hc06/Hc06.h:
 C:\Users\Dan_2\Desktop\ArduinoLibs\Timer/Timer.h:
 
 C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h:
+
+C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\SonarComms/SonarComms.h:
 
 ..\MainBoard.ino:

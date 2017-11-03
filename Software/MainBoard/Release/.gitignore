@@ -1,6 +1,5 @@
-/sources.mk
-/subdir.mk
 /Namespaces/
 /core/
 /libraries/
-/makefile
+/sources.mk
+/subdir.mk

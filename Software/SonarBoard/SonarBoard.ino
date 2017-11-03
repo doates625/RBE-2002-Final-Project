@@ -15,10 +15,14 @@
 // ARDUINO WIRING FORMAT
 //*************************************************************//
 
-const uint8_t PIN_SONAR_F_T = 11;
-const uint8_t PIN_SONAR_F_E = 9;
-const uint8_t PIN_SONAR_B_T = 10;
-const uint8_t PIN_SONAR_B_E = 8;
+const uint8_t PIN_SONAR_F_T = 2; // FILL IN
+const uint8_t PIN_SONAR_F_E = 3;
+const uint8_t PIN_SONAR_B_T = 0;
+const uint8_t PIN_SONAR_B_E = 0;
+const uint8_t PIN_SONAR_L_T = 0;
+const uint8_t PIN_SONAR_L_E = 0;
+const uint8_t PIN_SONAR_R_T = 0;
+const uint8_t PIN_SONAR_R_E = 0;
 const uint8_t PIN_LED = 13;
 
 //*************************************************************//
@@ -30,6 +34,7 @@ const unsigned long BAUD = 115200;
 
 const byte BYTE_BEGIN = 0x42; // "B"
 const byte BYTE_READY = 0x52; // "R"
+const byte BYTE_DATA  = 0x44; // "D"
 
 //*************************************************************//
 // OBJECT DEFINITIONS
@@ -39,8 +44,10 @@ Led led(PIN_LED);
 
 HcSr04 sonarF(PIN_SONAR_F_T, PIN_SONAR_F_E);
 HcSr04 sonarB(PIN_SONAR_B_T, PIN_SONAR_B_E);
+HcSr04 sonarL(PIN_SONAR_L_T, PIN_SONAR_L_E);
+HcSr04 sonarR(PIN_SONAR_R_T, PIN_SONAR_R_E);
 
-BinarySerial binSerial(*serial, BAUD);
+BinarySerial bs(*serial, BAUD);
 
 //*************************************************************//
 // GLOBAL VARIABLE INSTANTIATIONS
@@ -48,10 +55,23 @@ BinarySerial binSerial(*serial, BAUD);
 
 float distF = 0;
 float distB = 0;
+float distL = 0;
+float distR = 0;
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
 //*************************************************************//
+
+//!b Flashes LED to indicate an error
+void flashLed(uint8_t n) {
+	while(1) {
+		for(uint8_t i=1; i<=n; i++) {
+			led.on(); delay(100);
+			led.off(); delay(250);
+		}
+		delay(1000);
+	}
+}
 
 //!b Executes once on Arduino reset.
 //!d Tasks:
@@ -62,26 +82,37 @@ void setup() {
 	led.setup();
 	sonarF.setup();
 	sonarB.setup();
+	sonarL.setup();
+	sonarR.setup();
 
-	binSerial.setup();
-	binSerial.wait();
-	if(binSerial.readByte() != BYTE_BEGIN)
-		while(1) {
-			led.on(); delay(100);
-			led.off(); delay(400);
-		}
-	serial->print("Beginning");
+	bs.setup();
+	bs.wait();
+	if(bs.readByte() == BYTE_BEGIN) {
+		led.on();
+		bs.writeByte(BYTE_READY);
+		return;
+	} else
+		flashLed(1);
 }
 
 //!b Executes repeatedly after Arduino reset.
 //!d Tasks:
 //!d - Gather ultrasonic distance data
-//!d - Wait for request from serial ("R")
-//!d - Print ultrasonic data to serial
+//!d - Send ultrasonic data to serial.
 void loop() {
 	distF = sonarF.dist();
-	distB = sonarB.dist();
-	serial->println("F: " + String(distF));
-	serial->println("B: " + String(distB));
-	delay(250);
+	distB = distF + 1; // sonarB.dist();
+	distL = distF + 2; // sonarL.dist();
+	distR = distF + 3; // sonarR.dist();
+
+	if(bs.available()) {
+		if(bs.readByte() == BYTE_READY) {
+			bs.writeByte(BYTE_DATA);
+			bs.writeFloat(distF);
+			bs.writeFloat(distB);
+			bs.writeFloat(distL);
+			bs.writeFloat(distR);
+		} else
+			flashLed(2);
+	}
 }

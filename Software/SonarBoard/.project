@@ -56,5 +56,10 @@
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Led</location>
 		</link>
+		<link>
+			<name>libraries/Timer</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Timer</location>
+		</link>
 	</linkedResources>
 </projectDescription>
