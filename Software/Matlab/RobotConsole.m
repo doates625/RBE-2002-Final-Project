@@ -60,10 +60,10 @@ while 1
     disp(['Time: ' num2str(t, '%.2f') 's'])
     disp(['Heading: ' num2str(h, '%.3f') 'rad'])
     disp('Sonar: ')
-    disp([TAB 'F: ' num2str(dF, '.2f') 'm'])
-    disp([TAB 'B: ' num2str(dB, '.2f') 'm'])
-    disp([TAB 'L: ' num2str(dL, '.2f') 'm'])
-    disp([TAB 'R: ' num2str(dR, '.2f') 'm'])
+    disp([TAB 'F: ' num2str(dF, '%.2f') 'm'])
+    disp([TAB 'B: ' num2str(dB, '%.2f') 'm'])
+    disp([TAB 'L: ' num2str(dL, '%.2f') 'm'])
+    disp([TAB 'R: ' num2str(dR, '%.2f') 'm'])
     
     % Graph Heading
     x = sin(h);
