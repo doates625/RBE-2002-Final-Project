@@ -13,7 +13,9 @@
 //**************************************************************/
 
 namespace SonarComms {
-	HardwareSerial* serial = &Serial3;
+	bool isSetup = false;
+
+	HardwareSerial* serial = &Serial1;
 	BinarySerial bs(
 		*serial,
 		BAUD);
@@ -34,21 +36,24 @@ namespace SonarComms {
 //!d - Send begin message to sonar board
 //!d - Wait for
 void SonarComms::setup() {
-	IndicatorLed::setup();
+	if(!isSetup) {
+		isSetup = true;
+		IndicatorLed::setup();
 
-	// Reset the sonar board
-	pinMode(PIN_RESET, OUTPUT);
-	digitalWrite(PIN_RESET, HIGH);
-	delay(1500);
+		// Reset the sonar board
+		pinMode(PIN_RESET, OUTPUT);
+		digitalWrite(PIN_RESET, HIGH);
+		delay(1500);
 
-	// Start serial communication
-	bs.setup();
-	bs.flush();
-	bs.writeByte(BYTE_BEGIN);
-	if(bs.wait(1, TIMEOUT) && bs.readByte() == BYTE_READY)
-		return;
-	else
-		IndicatorLed::flash(1);
+		// Start serial communication
+		bs.setup();
+		bs.flush();
+		bs.writeByte(BYTE_BEGIN);
+		if(bs.wait(1, TIMEOUT) && bs.readByte() == BYTE_READY)
+			return;
+		else
+			IndicatorLed::flash(1);
+	}
 }
 
 //!b Performs one communication loop iteration with sonar board.

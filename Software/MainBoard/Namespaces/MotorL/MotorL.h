@@ -7,10 +7,6 @@
 //!a RBE-2002 B17 Team 10
 
 #pragma once
-
-#ifndef __MOTOR_L_H__
-#define __MOTOR_L_H__
-
 #include "DcMotor.h"
 
 //**************************************************************/
@@ -36,5 +32,3 @@ namespace MotorL {
 	void interruptA();
 	void interruptB();
 }
-
-#endif

@@ -13,6 +13,7 @@ BYTE_UPDATE = hex2dec('03');
 
 % Shortcuts
 NL = newline;
+TAB = char(9);
 
 %---------------------------------------------------------------%
 
@@ -45,17 +46,26 @@ end
 while 1
     % Get heading
     serial.writeByte(BYTE_UPDATE);
-    serial.wait(8);
-    t = double(serial.readFloat());
-    h = double(serial.readFloat());
+    serial.wait(24);
+    t = serial.readFloat();
+    h = serial.readFloat();
+    dF = serial.readFloat();
+    dB = serial.readFloat();
+    dL = serial.readFloat();
+    dR = serial.readFloat();
     
-    % Display time and heading
+    % Display Robot Statuses
     clc
     disp(['RobotConsole' NL])
     disp(['Time: ' num2str(t, '%.2f') 's'])
     disp(['Heading: ' num2str(h, '%.3f') 'rad'])
+    disp('Sonar: ')
+    disp([TAB 'F: ' num2str(dF, '.2f') 'm'])
+    disp([TAB 'B: ' num2str(dB, '.2f') 'm'])
+    disp([TAB 'L: ' num2str(dL, '.2f') 'm'])
+    disp([TAB 'R: ' num2str(dR, '.2f') 'm'])
     
-    % Graph heading
+    % Graph Heading
     x = sin(h);
     y = cos(h);
     figure(1)

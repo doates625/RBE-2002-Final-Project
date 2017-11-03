@@ -23,8 +23,7 @@
 //!d - Initialize odometer.
 //!d - Initialize Matlab communication over Bluetooth.
 void setup() {
-	Serial.begin(115200);
-	SonarComms::setup();
+	MatlabComms::setup();
 }
 
 //!b Executes repeatedly after Arduino reset.
@@ -32,10 +31,5 @@ void setup() {
 //!d - Loop Matlab communication.
 void loop() {
 	SonarComms::loop();
-	using namespace SonarComms;
-	Serial.println("F: " + String(distF));
-	// Serial.println("B: " + String(distB));
-	// Serial.println("L: " + String(distL));
-	// Serial.println("R: " + String(distR));
-	delay(250);
+	MatlabComms::loop();
 }

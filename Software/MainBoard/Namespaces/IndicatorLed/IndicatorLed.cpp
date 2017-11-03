@@ -12,6 +12,8 @@
 //**************************************************************/
 
 namespace IndicatorLed {
+	bool isSetup = false;
+
 	Led led(PIN_LED);
 }
 
@@ -21,7 +23,10 @@ namespace IndicatorLed {
 
 //!b Initializes namespace and LED.
 void IndicatorLed::setup() {
-	led.setup();
+	if(!isSetup) {
+		isSetup = true;
+		led.setup();
+	}
 }
 
 //!b Flashes LED n times in a loop forever.

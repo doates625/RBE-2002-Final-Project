@@ -13,6 +13,8 @@
 
 // Motor object
 namespace MotorL {
+	bool isSetup = false;
+
 	DcMotor motor(
 		TERMINAL_VOLTAGE,
 		PIN_ENABLE,
@@ -30,16 +32,19 @@ namespace MotorL {
 //!b Initializes and enables motor.
 //!d Call this method in setup.
 void MotorL::setup() {
-	motor.setup();
-	motor.enable();
-	attachInterrupt(
-		motor.getInterruptA(),
-		interruptA,
-		CHANGE);
-	attachInterrupt(
-		motor.getInterruptB(),
-		interruptB,
-		CHANGE);
+	if(!isSetup) {
+		isSetup = true;
+		motor.setup();
+		motor.enable();
+		attachInterrupt(
+			motor.getInterruptA(),
+			interruptA,
+			CHANGE);
+		attachInterrupt(
+			motor.getInterruptB(),
+			interruptB,
+			CHANGE);
+	}
 }
 
 //!b Performs ISR for motor encoder A.

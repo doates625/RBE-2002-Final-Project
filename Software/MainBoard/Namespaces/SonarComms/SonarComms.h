@@ -16,7 +16,7 @@
 namespace SonarComms {
 
 	// Arduino pins
-	const uint8_t PIN_RESET = 2;
+	const uint8_t PIN_RESET = 12;
 
 	// Communication objects and parameters
 	extern HardwareSerial* serial;

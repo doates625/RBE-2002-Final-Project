@@ -16,6 +16,7 @@
 //**************************************************************/
 
 namespace Odometer {
+	bool isSetup = false;
 
 	// Robot Physical Properties
 	const float wheelRadius = 0.034925; // (m)
@@ -39,8 +40,11 @@ namespace Odometer {
 //!b Initializes IMU and namespace.
 //!d Call this method in setup.
 void Odometer::setup() {
-	imu.setup();
-	h0 = imu.heading();
+	if(!isSetup) {
+		isSetup = true;
+		imu.setup();
+		h0 = imu.heading();
+	}
 }
 
 //!b Returns IMU heading relative to starting orientation.
