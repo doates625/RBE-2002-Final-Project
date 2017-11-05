@@ -4,80 +4,79 @@
 % RBE-2001 B17 Team 10
 %---------------------------------------------------------------%
 
-% Bluetooth parameters
-clear vars; clc
-BLUETOOTH_NAME = 'Arduino';
-BLUETOOTH_CHANNEL = 1;
-BYTE_BEGIN = hex2dec('01');
-BYTE_UPDATE = hex2dec('03');
+%% Clear Workspace
+close all
+clear vars
+clc
 
-% Shortcuts
-NL = newline;
-TAB = char(9);
+%% User Interface Initialization
+displayTitle();
+ui = RobotUI();
+com = RobotComms('Arduino', 1);
 
-%---------------------------------------------------------------%
+%% Communication Loop
+state = 'WaitConnect';
 
-% Program Initialization
-disp(['RobotConsole' NL])
-
-% Initialize Bluetooth
-if ~exist('bluetooth', 'var')
-    disp(['Finding bluetooth module "' BLUETOOTH_NAME '" ...'])
-    bluetooth = Bluetooth('Arduino', 1);
-    
-end
-if ~exist('serial', 'var')
-    serial = ArduinoSerial(bluetooth);
-end
-
-% Connect to Bluetooth
-disp(['Connecting to "' BLUETOOTH_NAME '" ...'])
-if serial.open()
-    disp('Connected!')
-    serial.writeByte(BYTE_BEGIN);
-else
-    disp('Connection failed!')
-    return
-end
-
-%---------------------------------------------------------------%
-
-% Communication loop
 while 1
-    % Get heading
-    serial.writeByte(BYTE_UPDATE);
-    serial.wait(24);
-    t = serial.readFloat();
-    h = serial.readFloat();
-    dF = serial.readFloat();
-    dB = serial.readFloat();
-    dL = serial.readFloat();
-    dR = serial.readFloat();
+    displayTitle();
     
-    % Display Robot Statuses
+    switch state
+        
+        % Wait for user to press connect button
+        case 'WaitConnect'
+            if ui.connectPressed()
+                disp('Connecting to Bluetooth...')
+                com.connect();
+                state = 'WaitBegin';
+            else
+                disp('Press ''Connect'' to connect to robot.')
+            end
+            ui.update();
+            
+        % Wait for begin button to press
+        case 'WaitBegin'
+            if ui.beginPressed()
+                disp('Beginning communication...')
+                com.begin();
+                state = 'Active';
+            else
+                disp('Press ''Begin'' to start robot operations.')
+            end
+            ui.update();
+            
+        % Active robot control
+        case 'Active'
+            
+            % Disconnect command
+            if ui.disconnectPressed()
+                com.disconnect();
+                disp('Disconnected from robot.')
+                pause(1)
+                return
+            end
+            
+            % Get Robot Data
+            rd = com.getData();
+
+            % Display Data
+            displayTitle();
+            disp(['Time: ' num2str(rd.time, '%.2f') 's'])
+            disp(['Heading: ' num2str(rd.heading, '%.3f') 'rad'])
+            disp('Sonar: ')
+            disp(['    F: ' num2str(rd.sonar.f, '%.2f') 'm'])
+            disp(['    B: ' num2str(rd.sonar.b, '%.2f') 'm'])
+            disp(['    L: ' num2str(rd.sonar.l, '%.2f') 'm'])
+            disp(['    R: ' num2str(rd.sonar.r, '%.2f') 'm'])
+
+            % Graph Data
+            ui.update(rd);  
+    end
+end
+
+%% Helper Functions
+
+% Clears command line and displays program title
+function displayTitle()
     clc
-    disp(['RobotConsole' NL])
-    disp(['Time: ' num2str(t, '%.2f') 's'])
-    disp(['Heading: ' num2str(h, '%.3f') 'rad'])
-    disp('Sonar: ')
-    disp([TAB 'F: ' num2str(dF, '%.2f') 'm'])
-    disp([TAB 'B: ' num2str(dB, '%.2f') 'm'])
-    disp([TAB 'L: ' num2str(dL, '%.2f') 'm'])
-    disp([TAB 'R: ' num2str(dR, '%.2f') 'm'])
-    
-    % Graph Heading
-    x = sin(h);
-    y = cos(h);
-    figure(1)
-    hold off
-    plot([0 x], [0 y], 'color', 'b', 'linewidth', 2)
-    hold on
-    text(1.05*x, 1.05*y, 'Heading')
-    title('Robot Console')
-    xlabel('Field x')
-    ylabel('Field y')
-    axis equal
-    axis([-1.1, 1.1, -1.1, 1.1])
-    grid on
-    drawnow
+    disp(['Robot Console' newline])
 end
