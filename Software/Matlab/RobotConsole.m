@@ -26,7 +26,13 @@ while 1
         case 'WaitConnect'
             if ui.connectPressed()
                 disp('Connecting to Bluetooth...')
-                com.connect();
+                try
+                    com.connect();
+                catch
+                    disp('Connection failed!')
+                    pause(1)
+                    return
+                end
                 state = 'WaitBegin';
             else
                 disp('Press ''Connect'' to connect to robot.')
