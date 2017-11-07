@@ -16,11 +16,11 @@
 namespace MotorL {
 
 	// Arduino Pin Connections
-	const uint8_t PIN_ENABLE = 0; // FILL THESE IN
-	const uint8_t PIN_FORWARD = 0;
-	const uint8_t PIN_REVERSE = 0;
-	const uint8_t PIN_ENCODER_A = 0;
-	const uint8_t PIN_ENCODER_B = 0;
+	const uint8_t PIN_ENABLE = 8;
+	const uint8_t PIN_FORWARD = 9;
+	const uint8_t PIN_REVERSE = 10;
+	const uint8_t PIN_ENCODER_A = 3;
+	const uint8_t PIN_ENCODER_B = 2;
 
 	// Motor Physical Properties
 	extern DcMotor motor;

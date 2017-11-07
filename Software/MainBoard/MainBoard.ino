@@ -6,8 +6,8 @@
 //!b Software for RBE-2002 final project main control board.
 //!a RBE-2002 B17 Team 10
 
-#include "IndicatorLed.h"
 #include "Arduino.h"
+#include "IndicatorLed.h"
 #include "MotorL.h"
 #include "MotorR.h"
 #include "Odometer.h"
@@ -21,8 +21,10 @@
 //!b Executes once on Arduino reset.
 void setup() {
 
-	// Initialize Indicator LED
+	// Initialize LED and Drive Motors
 	IndicatorLed::setup();
+	MotorL::setup();
+	MotorR::setup();
 
 	// Initialize Odometer
 	switch(Odometer::setup()) {
