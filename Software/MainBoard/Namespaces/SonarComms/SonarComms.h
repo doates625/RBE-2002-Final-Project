@@ -15,15 +15,6 @@
 
 namespace SonarComms {
 
-	// Arduino pins
-	const uint8_t PIN_RESET = 12;
-
-	// Communication objects and parameters
-	extern HardwareSerial* serial;
-	extern BinarySerial bs;
-	const unsigned long BAUD = 115200;
-	const float TIMEOUT = 1.0; // (s)
-
 	const byte BYTE_BEGIN = 0x42; // "B"
 	const byte BYTE_READY = 0x52; // "R"
 	const byte BYTE_DATA  = 0x44; // "D"
@@ -35,6 +26,6 @@ namespace SonarComms {
 	extern float distR;
 
 	// Function templates
-	void setup();
+	uint8_t setup();
 	void loop();
 }

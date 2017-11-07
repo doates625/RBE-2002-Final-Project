@@ -13,9 +13,13 @@
 //**************************************************************/
 
 namespace SonarComms {
-	bool isSetup = false;
 
-	HardwareSerial* serial = &Serial1;
+	const uint8_t PIN_RESET = 4;
+
+	HardwareSerial* serial = &Serial2;
+	const unsigned long BAUD = 115200;
+	const float TIMEOUT = 1.0; // (s)
+
 	BinarySerial bs(
 		*serial,
 		BAUD);
@@ -31,29 +35,24 @@ namespace SonarComms {
 //**************************************************************/
 
 //!b Initializes namespace
-//!d Tasks:
-//!d - Initialize serial communication
-//!d - Send begin message to sonar board
-//!d - Wait for
-void SonarComms::setup() {
-	if(!isSetup) {
-		isSetup = true;
-		IndicatorLed::setup();
+//!d Return codes:
+//!d - 0: Everything worked
+//!d - 1: Sonar board timed out
+//!d - 2: Sonar board sent bad byte
+uint8_t SonarComms::setup() {
 
-		// Reset the sonar board
-		pinMode(PIN_RESET, OUTPUT);
-		digitalWrite(PIN_RESET, HIGH);
-		delay(1500);
+	// Reset the sonar board
+	pinMode(PIN_RESET, OUTPUT);
+	digitalWrite(PIN_RESET, HIGH);
+	delay(1500);
 
-		// Start serial communication
-		bs.setup();
-		bs.flush();
-		bs.writeByte(BYTE_BEGIN);
-		if(bs.wait(1, TIMEOUT) && bs.readByte() == BYTE_READY)
-			return;
-		else
-			IndicatorLed::flash(1);
-	}
+	// Start serial communication
+	bs.setup();
+	bs.flush();
+	bs.writeByte(BYTE_BEGIN);
+	if(!bs.wait(1, TIMEOUT)) return 1;
+	if(bs.readByte() != BYTE_READY) return 2;
+	return 0;
 }
 
 //!b Performs one communication loop iteration with sonar board.

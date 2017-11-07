@@ -19,17 +19,32 @@
 //*************************************************************//
 
 //!b Executes once on Arduino reset.
-//!d Tasks:
-//!d - Initialize odometer.
-//!d - Initialize Matlab communication over Bluetooth.
 void setup() {
-	MatlabComms::setup();
+	IndicatorLed::setup();
+
+	// Initialize Odometer
+	switch(Odometer::setup()) {
+		case 1: IndicatorLed::flash(1); break;
+		default: break;
+	}
+
+	// Initialize Sonar
+	switch(SonarComms::setup()) {
+		case 1: IndicatorLed::flash(2); break;
+		case 2: IndicatorLed::flash(3); break;
+		default: break;
+	}
+
+	// Initialize Matlab communication over Bluetooth
+	switch(MatlabComms::setup()) {
+		case 1: IndicatorLed::flash(4); break;
+		case 2: IndicatorLed::flash(5); break;
+		default: break;
+	}
+
+	// Indicate readiness
+	IndicatorLed::led.on();
 }
 
 //!b Executes repeatedly after Arduino reset.
-//!d Tasks:
-//!d - Loop Matlab communication.
-void loop() {
-	SonarComms::loop();
-	MatlabComms::loop();
-}
+void loop() {}

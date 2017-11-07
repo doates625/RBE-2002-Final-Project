@@ -14,42 +14,36 @@ displayTitle();
 ui = RobotUI();
 com = RobotComms('Arduino', 1);
 
-%% Communication Loop
-state = 'WaitConnect';
+%% Connect to Robot
+while 1
+    displayTitle();
+    if ui.connectPressed()
+        disp('Connecting to robot...')
+        [s, msg] = com.connect();
+        disp(msg)
+        pause(1)
+        if s ~= 1
+            com.disconnect();
+            return
+        else
+            break
+        end
+    else
+        disp('Press ''Connect'' to connect to robot.')
+    end
+    ui.update();
+end
+
+%% Disconnect from Robot
+com.disconnect();
+
+%% Ignore remaining code for now
+return
 
 while 1
     displayTitle();
     
     switch state
-        
-        % Wait for user to press connect button
-        case 'WaitConnect'
-            if ui.connectPressed()
-                disp('Connecting to Bluetooth...')
-                try
-                    com.connect();
-                catch
-                    disp('Connection failed!')
-                    pause(1)
-                    return
-                end
-                state = 'WaitBegin';
-            else
-                disp('Press ''Connect'' to connect to robot.')
-            end
-            ui.update();
-            
-        % Wait for begin button to press
-        case 'WaitBegin'
-            if ui.beginPressed()
-                disp('Beginning communication...')
-                com.begin();
-                state = 'Active';
-            else
-                disp('Press ''Begin'' to start robot operations.')
-            end
-            ui.update();
-            
         % Active robot control
         case 'Active'
             

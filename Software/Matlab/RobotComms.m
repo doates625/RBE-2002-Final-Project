@@ -8,8 +8,7 @@ classdef RobotComms < handle
         port;
         serial;
         
-        BYTE_BEGIN = hex2dec('01');
-        BYTE_UPDATE = hex2dec('03');
+        BYTE_CONNECT = hex2dec('01');
     end
     
     methods
@@ -20,31 +19,44 @@ classdef RobotComms < handle
             obj.channel = channel;
         end
         
-        % Connects to Bluetooth module
-        function connect(obj)
+        % Connects to Robot
+        % s is connection status (1 for good, 0 for bad)
+        % msg is message containing details of connection status
+        function [s, msg] = connect(obj)
+            s = 0;
+            
+            % Build serial interface
             obj.port = Bluetooth(obj.name, obj.channel);
             obj.serial = ArduinoSerial(obj.port);
-            obj.serial.open();
+            
+            % Connect to Bluetooth serial port
+            try
+                obj.serial.open();
+            catch
+                msg = 'Bluetooth port open failed.';
+                return
+            end
+            
+            % Communicate with Arduino Mega
+            obj.serial.flush();
+            obj.serial.writeByte(obj.BYTE_CONNECT);
+            if obj.serial.wait(1, 1)
+                if obj.serial.readByte() ~= obj.BYTE_CONNECT
+                    msg = 'Arduino Mega sent bad byte.';
+                    return
+                end
+            else
+                msg = 'Arduino Mega timed out.';
+                return
+            end
+
+            % If all went well
+            s = 1;
+            msg = 'Connection successful.';
+            return
         end
         
-        % Tells robot to begin moving
-        function begin(obj)
-            obj.serial.writeByte(obj.BYTE_BEGIN);
-        end
-        
-        % Gets robot data
-        function data = getData(obj)
-            obj.serial.writeByte(obj.BYTE_UPDATE);
-            obj.serial.wait(24);
-            data.time = obj.serial.readFloat();
-            data.heading = obj.serial.readFloat();
-            data.sonar.f = obj.serial.readFloat();
-            data.sonar.b = obj.serial.readFloat();
-            data.sonar.l = obj.serial.readFloat();
-            data.sonar.r = obj.serial.readFloat();
-        end
-        
-        % Disconnects from Bluetooth module
+        % Disconnects from bluetooth
         function disconnect(obj)
             obj.serial.close();
         end

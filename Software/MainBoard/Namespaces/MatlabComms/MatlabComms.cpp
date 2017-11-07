@@ -6,21 +6,20 @@
 //!a RBE-2002 B17 Team 10
 
 #include "MatlabComms.h"
-#include "IndicatorLed.h"
-#include "Odometer.h"
-#include "SonarComms.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
 //**************************************************************/
 
 namespace MatlabComms {
-	bool isSetup = false;
 
-	HardwareSerial* serial = &Serial;
-	BinarySerial bs(
-		*serial,
-		BAUD);
+	// Communication parameters
+	HardwareSerial* serialPort = &Serial;
+	const unsigned long BAUD = 115200;
+
+	// Communication objects
+	BinarySerial serial(*serialPort, BAUD);
+	Hc06 hc06(*serialPort, BAUD);
 }
 
 //**************************************************************/
@@ -28,36 +27,15 @@ namespace MatlabComms {
 //**************************************************************/
 
 //!b Initializes namespaces and waits for Matlab connection.
-void MatlabComms::setup() {
-	if(!isSetup) {
-		isSetup = true;
-		IndicatorLed::setup();
-		Odometer::setup();
-		SonarComms::setup();
-
-		bs.setup();
-		bs.wait();
-		if(bs.readByte() == BYTE_BEGIN)
-			return;
-		else
-			IndicatorLed::flash(4);
-	}
-}
-
-//!b Performs one communication loop iteration with Matlab.
-void MatlabComms::loop() {
-	if(bs.available()) {
-		switch(bs.readByte()) {
-			case BYTE_UPDATE:
-				bs.writeFloat(clockTime());
-				bs.writeFloat(Odometer::heading());
-				bs.writeFloat(SonarComms::distF);
-				bs.writeFloat(SonarComms::distB);
-				bs.writeFloat(SonarComms::distL);
-				bs.writeFloat(SonarComms::distR);
-				break;
-			default:
-				break;
-		}
-	}
+//!d Return codes:
+//!d - 0: All success
+//!d - 1: Hc06 connection failed
+//!d - 2: Wrong initialized byte received
+uint8_t MatlabComms::setup() {
+	if(!hc06.setup()) return 1;
+	serial.setup();
+	serial.wait();
+	if(serial.readByte() != BYTE_CONNECT) return 2;
+	serial.writeByte(BYTE_CONNECT);
+	return 0;
 }
