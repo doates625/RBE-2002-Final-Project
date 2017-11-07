@@ -14,16 +14,21 @@
 
 namespace SonarComms {
 
+	// Sonar board reset pin
 	const uint8_t PIN_RESET = 4;
 
+	// Serial communication parameters
 	HardwareSerial* serial = &Serial2;
 	const unsigned long BAUD = 115200;
 	const float TIMEOUT = 1.0; // (s)
+	const byte BYTE_SONAR = 0x01;
 
+	// Binary serial interface
 	BinarySerial bs(
 		*serial,
 		BAUD);
 
+	// Sonar distance variables
 	float distF = 0;
 	float distB = 0;
 	float distL = 0;
@@ -49,33 +54,27 @@ uint8_t SonarComms::setup() {
 	// Start serial communication
 	bs.setup();
 	bs.flush();
-	bs.writeByte(BYTE_BEGIN);
+	bs.writeByte(BYTE_SONAR);
 	if(!bs.wait(1, TIMEOUT)) return 1;
-	if(bs.readByte() != BYTE_READY) return 2;
+	if(bs.readByte() != BYTE_SONAR) return 2;
 	return 0;
 }
 
 //!b Performs one communication loop iteration with sonar board.
-void SonarComms::loop() {
-	bs.writeByte(BYTE_READY);
-
-	if(bs.wait(1, TIMEOUT)) {
-		switch(bs.readByte()) {
-
-			case BYTE_DATA:
-				if(bs.wait(16, TIMEOUT)) {
-					distF = bs.readFloat();
-					distB = bs.readFloat();
-					distL = bs.readFloat();
-					distR = bs.readFloat();
-				} else
-					IndicatorLed::flash(2);
-				break;
-
-			default:
-				IndicatorLed::flash(3);
-				break;
-		}
+//!d Return codes:
+//!d - 0: Complete success
+//!d - 1: Sonar board timed out
+//!d - 2: Sonar board sent bad byte
+uint8_t SonarComms::loop() {
+	bs.writeByte(BYTE_SONAR);
+	if(bs.wait(17, TIMEOUT)) {
+		if(bs.readByte() != BYTE_SONAR)
+			return 2;
+		distF = bs.readFloat();
+		distB = bs.readFloat();
+		distL = bs.readFloat();
+		distR = bs.readFloat();
+		return 0;
 	} else
-		IndicatorLed::flash(4);
+		return 1;
 }

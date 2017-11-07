@@ -15,8 +15,8 @@
 // ARDUINO WIRING FORMAT
 //*************************************************************//
 
-const uint8_t PIN_SONAR_F_T = 2; // FILL IN
-const uint8_t PIN_SONAR_F_E = 3;
+const uint8_t PIN_SONAR_F_T = 0; // FILL IN
+const uint8_t PIN_SONAR_F_E = 0;
 const uint8_t PIN_SONAR_B_T = 0;
 const uint8_t PIN_SONAR_B_E = 0;
 const uint8_t PIN_SONAR_L_T = 0;
@@ -31,10 +31,7 @@ const uint8_t PIN_LED = 13;
 
 HardwareSerial* serial = &Serial;
 const unsigned long BAUD = 115200;
-
-const byte BYTE_BEGIN = 0x42; // "B"
-const byte BYTE_READY = 0x52; // "R"
-const byte BYTE_DATA  = 0x44; // "D"
+const byte BYTE_SONAR = 0x01;
 
 //*************************************************************//
 // OBJECT DEFINITIONS
@@ -77,7 +74,7 @@ void flashLed(uint8_t n) {
 //!d Tasks:
 //!d - Initialize ultrasonic sensors
 //!d - Initialize serial communication
-//!d - Wait for start byte ("B")
+//!d - Wait for start byte from main board
 void setup() {
 	led.setup();
 	sonarF.setup();
@@ -87,9 +84,9 @@ void setup() {
 
 	bs.setup();
 	bs.wait();
-	if(bs.readByte() == BYTE_BEGIN) {
+	if(bs.readByte() == BYTE_SONAR) {
 		led.on();
-		bs.writeByte(BYTE_READY);
+		bs.writeByte(BYTE_SONAR);
 		return;
 	} else
 		flashLed(1);
@@ -98,16 +95,16 @@ void setup() {
 //!b Executes repeatedly after Arduino reset.
 //!d Tasks:
 //!d - Gather ultrasonic distance data
-//!d - Send ultrasonic data to serial.
+//!d - Send ultrasonic data to serial when prompted.
 void loop() {
-	distF = sonarF.dist();
-	distB = distF + 1; // sonarB.dist();
-	distL = distF + 2; // sonarL.dist();
-	distR = distF + 3; // sonarR.dist();
+	distF = 0.1; // sonarF.dist();
+	distB = 0.2; // sonarB.dist();
+	distL = 0.3; // sonarL.dist();
+	distR = 0.4; // sonarR.dist();
 
 	if(bs.available()) {
-		if(bs.readByte() == BYTE_READY) {
-			bs.writeByte(BYTE_DATA);
+		if(bs.readByte() == BYTE_SONAR) {
+			bs.writeByte(BYTE_SONAR);
 			bs.writeFloat(distF);
 			bs.writeFloat(distB);
 			bs.writeFloat(distL);

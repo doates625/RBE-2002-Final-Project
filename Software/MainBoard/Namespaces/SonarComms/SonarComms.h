@@ -15,10 +15,6 @@
 
 namespace SonarComms {
 
-	const byte BYTE_BEGIN = 0x42; // "B"
-	const byte BYTE_READY = 0x52; // "R"
-	const byte BYTE_DATA  = 0x44; // "D"
-
 	// Distance Variables
 	extern float distF;
 	extern float distB;
@@ -27,5 +23,5 @@ namespace SonarComms {
 
 	// Function templates
 	uint8_t setup();
-	void loop();
+	uint8_t loop();
 }

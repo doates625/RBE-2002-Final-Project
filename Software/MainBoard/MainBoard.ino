@@ -20,6 +20,8 @@
 
 //!b Executes once on Arduino reset.
 void setup() {
+
+	// Initialize Indicator LED
 	IndicatorLed::setup();
 
 	// Initialize Odometer
@@ -28,7 +30,7 @@ void setup() {
 		default: break;
 	}
 
-	// Initialize Sonar
+	// Initialize Sonar Board
 	switch(SonarComms::setup()) {
 		case 1: IndicatorLed::flash(2); break;
 		case 2: IndicatorLed::flash(3); break;

@@ -16,6 +16,7 @@ namespace MatlabComms {
 	// Communication parameters
 	HardwareSerial* serialPort = &Serial;
 	const unsigned long BAUD = 115200;
+	const byte BYTE_CONNECT = 0x01;
 
 	// Communication objects
 	BinarySerial serial(*serialPort, BAUD);
@@ -26,9 +27,9 @@ namespace MatlabComms {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes namespaces and waits for Matlab connection.
+//!b Initializes namespace and waits for Matlab connection.
 //!d Return codes:
-//!d - 0: All success
+//!d - 0: Complete success
 //!d - 1: Hc06 connection failed
 //!d - 2: Wrong initialized byte received
 uint8_t MatlabComms::setup() {
