@@ -15,5 +15,9 @@
 //**************************************************************/
 
 namespace MatlabComms {
+	extern float driveVoltageL;
+	extern float driveVoltageR;
+
 	uint8_t setup();
+	void loop();
 }

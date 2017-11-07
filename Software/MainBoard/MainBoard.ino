@@ -51,4 +51,8 @@ void setup() {
 }
 
 //!b Executes repeatedly after Arduino reset.
-void loop() {}
+void loop() {
+	MatlabComms::loop();
+	MotorL::motor.setVoltage(MatlabComms::driveVoltageL);
+	MotorR::motor.setVoltage(MatlabComms::driveVoltageR);
+}

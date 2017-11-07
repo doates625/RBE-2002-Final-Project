@@ -9,6 +9,7 @@ classdef RobotComms < handle
         serial;
         
         BYTE_CONNECT = hex2dec('01');
+        BYTE_TELEOP = hex2dec('02');
     end
     
     methods
@@ -54,6 +55,20 @@ classdef RobotComms < handle
             s = 1;
             msg = 'Connection successful.';
             return
+        end
+        
+        % Sends drive voltages to robot and waits for response
+        % Returns 1 if response occured within 1 second
+        function s = setDriveVoltage(obj, vL, vR)
+            obj.serial.writeByte(obj.BYTE_TELEOP);
+            obj.serial.writeFloat(vL);
+            obj.serial.writeFloat(vR);
+            obj.serial.wait(1, 1);
+            if obj.serial.readByte() == obj.BYTE_TELEOP
+                s = 1;
+            else
+                s = 0;
+            end
         end
         
         % Disconnects from bluetooth

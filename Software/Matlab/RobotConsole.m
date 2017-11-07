@@ -9,14 +9,26 @@ close all
 clear vars
 clc
 
+%% Constants
+BLUETOOTH_NAME = 'Arduino';
+BLUETOOTH_CHANNEL = 1;
+TELEOP_VOLTAGE = 6;
+
 %% User Interface Initialization
 displayTitle();
+try
+    xbox = XboxController(1, 0.1, 1.5);
+catch
+    disp('Xbox controller not connected!')
+    return
+end
 ui = RobotUI();
-com = RobotComms('Arduino', 1);
+com = RobotComms(BLUETOOTH_NAME, BLUETOOTH_CHANNEL);
 
 %% Connect to Robot
 while 1
     displayTitle();
+    
     if ui.connectPressed()
         disp('Connecting to robot...')
         [s, msg] = com.connect();
@@ -31,11 +43,45 @@ while 1
     else
         disp('Press ''Connect'' to connect to robot.')
     end
+
     ui.update();
 end
 
-%% Disconnect from Robot
-com.disconnect();
+%% Wait for Begin Button
+while 1
+    displayTitle();
+    
+    if ui.beginPressed()
+        disp('Beginning teleop')
+        pause(1)
+        break
+    else
+        disp('Press ''Begin'' to begin teleop.')
+    end
+    
+    ui.update();
+end
+
+%% Teleoperated Loop
+while 1
+    displayTitle();
+    disp('Teleoperated Mode')
+    
+    [vL, vR] = getDriveVoltage(xbox, TELEOP_VOLTAGE);
+    if ~com.setDriveVoltage(vL, vR)
+        disp('Teleop response timeout!')
+        com.disconnect();
+        return
+    end
+    
+    if ui.disconnectPressed()
+        com.disconnect();
+        disp('Disconnect by user.')
+        return
+    end
+    
+    ui.update();
+end
 
 %% Ignore remaining code for now
 return
@@ -79,4 +125,12 @@ end
 function displayTitle()
     clc
     disp(['Robot Console' newline])
+end
+
+% Gets drive voltages from Xbox controller
+function [vL, vR] = getDriveVoltage(xbox, vMax)
+    [x, y] = xbox.LJS();
+    k = vMax * sqrt(2) * 0.5;
+    vL = k*(y + x);
+    vR = k*(y - x);
 end
