@@ -15,6 +15,7 @@
 //**************************************************************/
 
 namespace MatlabComms {
+	extern bool disconnected;
 	extern float driveVoltageL;
 	extern float driveVoltageR;
 

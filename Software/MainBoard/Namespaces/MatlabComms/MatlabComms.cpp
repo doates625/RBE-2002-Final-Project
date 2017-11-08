@@ -6,6 +6,7 @@
 //!a RBE-2002 B17 Team 10
 
 #include "MatlabComms.h"
+#include "Odometer.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -18,12 +19,15 @@ namespace MatlabComms {
 	const unsigned long BAUD = 115200;
 	const byte BYTE_CONNECT = 0x01;
 	const byte BYTE_TELEOP = 0x02;
+	const byte BYTE_ODOMETRY = 0x03;
+	const byte BYTE_DISCONNECT = 0x04;
 
 	// Communication objects
 	BinarySerial serial(*serialPort, BAUD);
 	Hc06 hc06(*serialPort, BAUD);
 
-	// Teleop drive voltages
+	// Teleop Parameters
+	bool disconnected = false;
 	float driveVoltageL = 0;
 	float driveVoltageR = 0;
 }
@@ -50,11 +54,26 @@ uint8_t MatlabComms::setup() {
 void MatlabComms::loop() {
 	if(serial.available())
 		switch(serial.readByte()) {
+
+			// Teleop command
 			case BYTE_TELEOP:
 				serial.wait(8);
 				driveVoltageL = serial.readFloat();
 				driveVoltageR = serial.readFloat();
 				serial.writeByte(BYTE_TELEOP);
+				break;
+
+			// Odometry info request
+			case BYTE_ODOMETRY:
+				serial.writeByte(BYTE_ODOMETRY);
+				serial.writeFloat(Odometer::robotPos(1));
+				serial.writeFloat(Odometer::robotPos(2));
+				serial.writeFloat(Odometer::h);
+				break;
+
+			// Disconnect message
+			case BYTE_DISCONNECT:
+				disconnected = true;
 				break;
 		}
 }

@@ -6,7 +6,6 @@
 //!a RBE-2002 B17 Team 10
 
 #include "Odometer.h"
-#include "LinearAtmel.h"
 #include "Bno055.h"
 #include "MotorL.h"
 #include "MotorR.h"
@@ -26,7 +25,9 @@ namespace Odometer {
 	Vec robotPos(2);
 	Vec deltaPos(2);
 	Mat rotator(2,2);
-	float h0 = 0;
+	float headingCalibration = 0;
+	float h = 0;
+	float hLast = 0;
 
 	// Bno055 IMU
 	Bno055 imu(trb); // UPDATE ORIENTATION
@@ -43,35 +44,52 @@ namespace Odometer {
 //!d - 1: IMU connection failed.
 uint8_t Odometer::setup() {
 	if(imu.setup()) {
-		h0 = imu.heading();
+		headingCalibration = imu.heading();
 		return 0;
 	} else
 		return 1;
 }
 
 //!b Returns IMU heading relative to starting orientation.
-float Odometer::heading() {
-	return imu.heading() - h0;
+float Odometer::getHeading() {
+	return imu.heading() - headingCalibration;
 }
 
 //!b Updates robot position from IMU and encoders.
-void Odometer::update() {
-	float dL = MotorL::motor.encoderAngle() * wheelRadius;
-	float dR = MotorR::motor.encoderAngle() * wheelRadius;
-	float rT = halfWheelTrack * (dR + dL) / (dR - dL);
-	float dT = dR / (rT + halfWheelTrack);
+void Odometer::loop() {
 
-	deltaPos(1) = rT * sin(dT);
-	deltaPos(2) = rT * (1.0 - cos(dT));
+	// Compute heading, change in heading, travel arc length
+	h = getHeading();
+	float dH = h - hLast;
+	float arc = (
+		MotorL::motor.encoderAngle() +
+		MotorR::motor.encoderAngle()
+	) * 0.5 * wheelRadius;
 
-	float h = heading();
+	// Compute delta position vector
+	if(true) { // dH < 0.001
+		deltaPos(1) = 0;
+		deltaPos(2) = arc;
+	} else {
+		float R = arc / dH;
+		deltaPos(1) = R * (cos(dH) - 1.0);
+		deltaPos(2) = R * sin(dH);
+	}
+
+	// Rotate delta position vector
 	float ch = cos(h);
 	float sh = sin(h);
 
 	rotator(1,1) = ch;
-	rotator(1,2) = -sh;
-	rotator(2,1) = sh;
+	rotator(1,2) = sh;
+	rotator(2,1) = -sh;
 	rotator(2,2) = ch;
 
+	// Add rotated delta vector to robot position
 	robotPos = robotPos + rotator * deltaPos;
+	hLast = h;
+
+	// Reset encoders
+	MotorL::motor.resetEncoder();
+	MotorR::motor.resetEncoder();
 }

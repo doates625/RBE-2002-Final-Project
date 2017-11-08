@@ -67,6 +67,7 @@ while 1
     displayTitle();
     disp('Teleoperated Mode')
     
+    % Control drive with Xbox
     [vL, vR] = getDriveVoltage(xbox, TELEOP_VOLTAGE);
     if ~com.setDriveVoltage(vL, vR)
         disp('Teleop response timeout!')
@@ -74,9 +75,25 @@ while 1
         return
     end
     
-    if ui.disconnectPressed()
+    % Get odometry data
+    [odm, s] = com.getOdometryData();
+    if s == 0
+        disp('Odometry read error!')
         com.disconnect();
+        return
+    end
+    
+    % Display odometry data
+    disp('Odometry:')
+    disp(['x: ' num2str(odm.x) 'm'])
+    disp(['y: ' num2str(odm.y) 'm'])
+    disp(['h: ' num2str(odm.h * 180 / pi) 'deg'])
+    pause(0.1)
+    
+    % Check disconnect button on UI
+    if ui.disconnectPressed()
         disp('Disconnect by user.')
+        com.disconnect();
         return
     end
     

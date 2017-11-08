@@ -53,6 +53,13 @@ void setup() {
 //!b Executes repeatedly after Arduino reset.
 void loop() {
 	MatlabComms::loop();
+	Odometer::loop();
+
 	MotorL::motor.setVoltage(MatlabComms::driveVoltageL);
 	MotorR::motor.setVoltage(MatlabComms::driveVoltageR);
+	if(MatlabComms::disconnected) {
+		MotorL::motor.brake();
+		MotorR::motor.brake();
+		IndicatorLed::led.off();
+	}
 }

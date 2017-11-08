@@ -10,6 +10,8 @@ classdef RobotComms < handle
         
         BYTE_CONNECT = hex2dec('01');
         BYTE_TELEOP = hex2dec('02');
+        BYTE_ODOMETRY = hex2dec('03');
+        BYTE_DISCONNECT = hex2dec('04');
     end
     
     methods
@@ -71,8 +73,25 @@ classdef RobotComms < handle
             end
         end
         
+        % Gets odometry information from robot
+        % s = 1 if everything worked
+        function [odm, s] = getOdometryData(obj)
+            obj.serial.writeByte(obj.BYTE_ODOMETRY);
+            obj.serial.wait(13);
+            if obj.serial.readByte() == obj.BYTE_ODOMETRY
+                s = 1;
+                odm.x = obj.serial.readFloat();
+                odm.y = obj.serial.readFloat();
+                odm.h = obj.serial.readFloat();
+            else
+                s = 0;
+                odm = 0;
+            end
+        end
+        
         % Disconnects from bluetooth
         function disconnect(obj)
+            obj.serial.writeByte(obj.BYTE_DISCONNECT);
             obj.serial.close();
         end
         
