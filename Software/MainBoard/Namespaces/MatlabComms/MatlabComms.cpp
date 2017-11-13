@@ -15,16 +15,19 @@
 namespace MatlabComms {
 
 	// Communication parameters
-	HardwareSerial* serialPort = &Serial;
+	HardwareSerial* SERIALPORT = &Serial;
 	const unsigned long BAUD = 115200;
+	const float TIMEOUT = 1.0; // (s)
+	Timer timer;
+
 	const byte BYTE_CONNECT = 0x01;
 	const byte BYTE_TELEOP = 0x02;
 	const byte BYTE_ODOMETRY = 0x03;
 	const byte BYTE_DISCONNECT = 0x04;
 
 	// Communication objects
-	BinarySerial serial(*serialPort, BAUD);
-	Hc06 hc06(*serialPort, BAUD);
+	BinarySerial bSerial(*SERIALPORT, BAUD);
+	Hc06 hc06(*SERIALPORT, BAUD);
 
 	// Teleop Parameters
 	bool disconnected = false;
@@ -40,40 +43,68 @@ namespace MatlabComms {
 //!d Return codes:
 //!d - 0: Complete success
 //!d - 1: Hc06 connection failed
-//!d - 2: Wrong initialized byte received
 uint8_t MatlabComms::setup() {
 	if(!hc06.setup()) return 1;
-	serial.setup();
-	serial.wait();
-	if(serial.readByte() != BYTE_CONNECT) return 2;
-	serial.writeByte(BYTE_CONNECT);
+	bSerial.setup();
+	return 0;
+}
+
+//!b Waits for begin message from Matlab.
+//!d If correct connection byte is received, writes the byte back
+//!d and starts the communication timeout timer for loop.
+//!d Return codes:
+//!d - 0: Complete success
+//!d - 1: Received wrong connection byte
+uint8_t MatlabComms::waitForBegin() {
+	bSerial.flush();
+	bSerial.wait();
+	if(bSerial.readByte() != BYTE_CONNECT) return 1;
+	bSerial.writeByte(BYTE_CONNECT);
+	timer.tic();
 	return 0;
 }
 
 //!b Runs one iteration of Matlab communication loop.
-void MatlabComms::loop() {
-	if(serial.available())
-		switch(serial.readByte()) {
+//!d Return codes:
+//!d - 0: Complete success
+//!d - 1: No message received within timeout
+//!d - 2: Invalid message type byte received
+//!d - 3: Teleop data timeout
+uint8_t MatlabComms::loop() {
+	if(bSerial.available()) {
+		while(bSerial.available()) {
+			switch(bSerial.readByte()) {
 
-			// Teleop command
-			case BYTE_TELEOP:
-				serial.wait(8);
-				driveVoltageL = serial.readFloat();
-				driveVoltageR = serial.readFloat();
-				serial.writeByte(BYTE_TELEOP);
-				break;
+				// Teleop command
+				case BYTE_TELEOP:
+					if(!bSerial.wait(8, TIMEOUT)) return 3;
+					bSerial.writeByte(BYTE_TELEOP);
+					driveVoltageL = bSerial.readFloat();
+					driveVoltageR = bSerial.readFloat();
+					break;
 
-			// Odometry info request
-			case BYTE_ODOMETRY:
-				serial.writeByte(BYTE_ODOMETRY);
-				serial.writeFloat(Odometer::robotPos(1));
-				serial.writeFloat(Odometer::robotPos(2));
-				serial.writeFloat(Odometer::h);
-				break;
+				// Odometry info request
+				case BYTE_ODOMETRY:
+					bSerial.writeByte(BYTE_ODOMETRY);
+					bSerial.writeFloat(Odometer::robotX);
+					bSerial.writeFloat(Odometer::robotY);
+					bSerial.writeFloat(Odometer::h);
+					break;
 
-			// Disconnect message
-			case BYTE_DISCONNECT:
-				disconnected = true;
-				break;
+				// Disconnect message
+				case BYTE_DISCONNECT:
+					disconnected = true;
+					break;
+
+				// Invalid message type
+				default:
+					return 2;
+			}
 		}
+		timer.tic();
+	} else {
+		if(timer.hasElapsed(TIMEOUT))
+			return 1;
+	}
+	return 0;
 }

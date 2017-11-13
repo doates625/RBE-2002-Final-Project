@@ -52,42 +52,61 @@ while 1
     displayTitle();
     
     if ui.beginPressed()
-        disp('Beginning teleop')
-        pause(1)
+        com.startRobot();
         break
-    else
+    elseif ui.disconnectPressed()
+        com.disconnect();
+        return
+    else 
         disp('Press ''Begin'' to begin teleop.')
+        disp('Press ''Disconnect'' to terminate program.')
     end
     
     ui.update();
 end
 
 %% Teleoperated Loop
+
+% DEBUG
+xMax = 0;
+yMax = 0;
+
 while 1
     displayTitle();
     disp('Teleoperated Mode')
     
     % Control drive with Xbox
     [vL, vR] = getDriveVoltage(xbox, TELEOP_VOLTAGE);
-    if ~com.setDriveVoltage(vL, vR)
-        disp('Teleop response timeout!')
+    [s, error] = com.setDriveVoltage(vL, vR);
+    if s ~= 1
+        disp(error)
         com.disconnect();
         return
     end
     
     % Get odometry data
-    [odm, s] = com.getOdometryData();
-    if s == 0
-        disp('Odometry read error!')
+    [odm, s, error] = com.getOdometryData();
+    if s ~= 1
+        disp(error)
         com.disconnect();
         return
     end
     
+    % DEBUG
+    if odm.x > xMax
+        xMax = odm.x;
+    end
+    if odm.y > yMax
+        yMax = odm.y;
+    end
+    
     % Display odometry data
     disp('Odometry:')
-    disp(['x: ' num2str(odm.x) 'm'])
-    disp(['y: ' num2str(odm.y) 'm'])
-    disp(['h: ' num2str(odm.h * 180 / pi) 'deg'])
+    disp(['x: ' num2str(odm.x, '%.6f') 'm'])
+    disp(['y: ' num2str(odm.y, '%.6f') 'm'])
+    disp(['h: ' num2str(odm.h * 180 / pi, '%.0f') 'deg'])
+    disp(['xMax: ' num2str(xMax, '%.6f') 'm'])
+    disp(['yMax: ' num2str(yMax, '%.6f') 'm'])
     pause(0.1)
     
     % Check disconnect button on UI
@@ -97,6 +116,7 @@ while 1
         return
     end
     
+    % Update user interface
     ui.update();
 end
 

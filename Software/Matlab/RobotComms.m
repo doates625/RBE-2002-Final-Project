@@ -8,6 +8,8 @@ classdef RobotComms < handle
         port;
         serial;
         
+        TIMEOUT = 1.0; % (s)
+        
         BYTE_CONNECT = hex2dec('01');
         BYTE_TELEOP = hex2dec('02');
         BYTE_ODOMETRY = hex2dec('03');
@@ -24,75 +26,110 @@ classdef RobotComms < handle
         
         % Connects to Robot
         % s is connection status (1 for good, 0 for bad)
-        % msg is message containing details of connection status
+        % msg is a string relating to the connection status
         function [s, msg] = connect(obj)
-            s = 0;
-            
-            % Build serial interface
+
+            % Build Bluetooth serial interface
             obj.port = Bluetooth(obj.name, obj.channel);
             obj.serial = ArduinoSerial(obj.port);
             
-            % Connect to Bluetooth serial port
+            % Connect to Bluetooth module
             try
                 obj.serial.open();
+                s = 1;
+                msg = 'Connection successful.';
+                return
             catch
+                s = 0;
                 msg = 'Bluetooth port open failed.';
                 return
             end
+        end
+        
+        % Sends begin message to robot
+        % s is the connection status (1 = good, 0 = bad)
+        % error is an empty string or an error message if s = 0
+        function [s, error] = startRobot(obj)
+            s = 0;
+            error = '';
             
-            % Communicate with Arduino Mega
+            % Send connect byte to robot
             obj.serial.flush();
             obj.serial.writeByte(obj.BYTE_CONNECT);
-            if obj.serial.wait(1, 1)
+            if obj.serial.wait(1, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_CONNECT
-                    msg = 'Arduino Mega sent bad byte.';
+                    error = 'Arduino Mega sent bad byte.';
                     return
                 end
             else
-                msg = 'Arduino Mega timed out.';
+                error = 'Arduino Mega timed out.';
                 return
             end
-
-            % If all went well
-            s = 1;
-            msg = 'Connection successful.';
-            return
         end
         
         % Sends drive voltages to robot and waits for response
-        % Returns 1 if response occured within 1 second
-        function s = setDriveVoltage(obj, vL, vR)
+        % s is connection status (1 = good, 0 = bad)
+        % error is an empty string or an error message if s = 0
+        function [s, error] = setDriveVoltage(obj, vL, vR)
+            s = 0;
+            error = '';
+            
+            % Send teleop command to robot
             obj.serial.writeByte(obj.BYTE_TELEOP);
             obj.serial.writeFloat(vL);
             obj.serial.writeFloat(vR);
-            obj.serial.wait(1, 1);
-            if obj.serial.readByte() == obj.BYTE_TELEOP
-                s = 1;
+            
+            % Check response for errors
+            if obj.serial.wait(1, obj.TIMEOUT)
+                if obj.serial.readByte() ~= obj.BYTE_TELEOP
+                    error = 'Teleop response incorrect';
+                    return
+                end
             else
-                s = 0;
+                error = 'Teleop response timeout';
+                return
             end
+            
+            % If all went well
+            s = 1;
         end
         
         % Gets odometry information from robot
         % s = 1 if everything worked
-        function [odm, s] = getOdometryData(obj)
+        function [odm, s, error] = getOdometryData(obj)
+            s = 0;
+            error = '';
+            odm.x = 0;
+            odm.y = 0;
+            odm.h = 0;
+            
+            % Send odometry request to robot
             obj.serial.writeByte(obj.BYTE_ODOMETRY);
-            obj.serial.wait(13);
-            if obj.serial.readByte() == obj.BYTE_ODOMETRY
-                s = 1;
-                odm.x = obj.serial.readFloat();
-                odm.y = obj.serial.readFloat();
-                odm.h = obj.serial.readFloat();
+            
+            % Check response for errors
+            if obj.serial.wait(13, obj.TIMEOUT)
+                if obj.serial.readByte() ~= obj.BYTE_ODOMETRY
+                    error = 'Odometry response incorrect';
+                    return
+                end
             else
-                s = 0;
-                odm = 0;
+                error = 'Odometry response timeout';
+                return
             end
+               
+            % If all went well
+            s = 1;
+            odm.x = obj.serial.readFloat();
+            odm.y = obj.serial.readFloat();
+            odm.h = obj.serial.readFloat();
         end
         
         % Disconnects from bluetooth
         function disconnect(obj)
-            obj.serial.writeByte(obj.BYTE_DISCONNECT);
-            obj.serial.close();
+            if obj.serial.connected()
+                obj.serial.writeByte(obj.BYTE_DISCONNECT);
+                obj.serial.close();
+            end
         end
         
         % Class destructor

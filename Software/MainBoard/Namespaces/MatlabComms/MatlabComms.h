@@ -20,5 +20,6 @@ namespace MatlabComms {
 	extern float driveVoltageR;
 
 	uint8_t setup();
-	void loop();
+	uint8_t waitForBegin();
+	uint8_t loop();
 }

@@ -2,16 +2,10 @@
 //This is a automatic generated file
 //Please do not modify this file
 //If you touch this file your change will be overwritten during the next build
-//This file has been generated on 2017-11-07 18:52:40
+//This file has been generated on 2017-11-10 17:31:59
 
 #include "Arduino.h"
-#include "Arduino.h"
-#include "IndicatorLed.h"
-#include "MotorL.h"
-#include "MotorR.h"
-#include "Odometer.h"
-#include "MatlabComms.h"
-#include "SonarComms.h"
+#include "FireBot.h"
 void setup() ;
 void loop() ;
 
