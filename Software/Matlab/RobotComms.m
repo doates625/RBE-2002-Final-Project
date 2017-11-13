@@ -102,12 +102,16 @@ classdef RobotComms < handle
             odm.x = 0;
             odm.y = 0;
             odm.h = 0;
+            odm.dF = 0;
+            odm.dB = 0;
+            odm.dL = 0;
+            odm.dR = 0;
             
             % Send odometry request to robot
             obj.serial.writeByte(obj.BYTE_ODOMETRY);
             
             % Check response for errors
-            if obj.serial.wait(13, obj.TIMEOUT)
+            if obj.serial.wait(29, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_ODOMETRY
                     error = 'Odometry response incorrect';
                     return
@@ -122,6 +126,10 @@ classdef RobotComms < handle
             odm.x = obj.serial.readFloat();
             odm.y = obj.serial.readFloat();
             odm.h = obj.serial.readFloat();
+            odm.dF = obj.serial.readFloat();
+            odm.dB = obj.serial.readFloat();
+            odm.dL = obj.serial.readFloat();
+            odm.dR = obj.serial.readFloat();
         end
         
         % Disconnects from bluetooth

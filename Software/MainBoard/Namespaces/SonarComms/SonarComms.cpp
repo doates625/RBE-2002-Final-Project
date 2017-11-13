@@ -6,7 +6,6 @@
 //!a RBE-2002 B17 Team 10
 
 #include "SonarComms.h"
-#include "IndicatorLed.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -66,15 +65,18 @@ uint8_t SonarComms::setup() {
 //!d - 1: Sonar board timed out
 //!d - 2: Sonar board sent bad byte
 uint8_t SonarComms::loop() {
-	bs.writeByte(BYTE_SONAR);
-	if(bs.wait(17, TIMEOUT)) {
-		if(bs.readByte() != BYTE_SONAR)
+	if(bs.available()) {
+		if(bs.readByte() == BYTE_SONAR) {
+			bs.writeByte(BYTE_SONAR);
+			if(bs.wait(16, TIMEOUT)) {
+				distF = bs.readFloat();
+				distB = bs.readFloat();
+				distL = bs.readFloat();
+				distR = bs.readFloat();
+			} else
+				return 1;
+		} else
 			return 2;
-		distF = bs.readFloat();
-		distB = bs.readFloat();
-		distL = bs.readFloat();
-		distR = bs.readFloat();
-		return 0;
-	} else
-		return 1;
+	}
+	return 0;
 }

@@ -7,6 +7,7 @@
 
 #include "MatlabComms.h"
 #include "Odometer.h"
+#include "SonarComms.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -89,6 +90,10 @@ uint8_t MatlabComms::loop() {
 					bSerial.writeFloat(Odometer::robotPos(1));
 					bSerial.writeFloat(Odometer::robotPos(2));
 					bSerial.writeFloat(Odometer::h);
+					bSerial.writeFloat(SonarComms::distF);
+					bSerial.writeFloat(SonarComms::distB);
+					bSerial.writeFloat(SonarComms::distL);
+					bSerial.writeFloat(SonarComms::distR);
 					break;
 
 				// Disconnect message

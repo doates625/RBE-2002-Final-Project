@@ -15,14 +15,14 @@
 // ARDUINO WIRING FORMAT
 //*************************************************************//
 
-const uint8_t PIN_SONAR_F_T = 0; // FILL IN
-const uint8_t PIN_SONAR_F_E = 0;
-const uint8_t PIN_SONAR_B_T = 0;
-const uint8_t PIN_SONAR_B_E = 0;
-const uint8_t PIN_SONAR_L_T = 0;
-const uint8_t PIN_SONAR_L_E = 0;
-const uint8_t PIN_SONAR_R_T = 0;
-const uint8_t PIN_SONAR_R_E = 0;
+const uint8_t PIN_SONAR_F_T = 10; // FILL IN
+const uint8_t PIN_SONAR_F_E = 9;
+const uint8_t PIN_SONAR_B_T = 8;
+const uint8_t PIN_SONAR_B_E = 7;
+const uint8_t PIN_SONAR_L_T = 6;
+const uint8_t PIN_SONAR_L_E = 5;
+const uint8_t PIN_SONAR_R_T = 12;
+const uint8_t PIN_SONAR_R_E = 11;
 const uint8_t PIN_LED = 13;
 
 //*************************************************************//
@@ -97,19 +97,18 @@ void setup() {
 //!d - Gather ultrasonic distance data
 //!d - Send ultrasonic data to serial when prompted.
 void loop() {
-	distF = 0.1; // sonarF.dist();
-	distB = 0.2; // sonarB.dist();
-	distL = 0.3; // sonarL.dist();
-	distR = 0.4; // sonarR.dist();
+	distF = sonarF.dist();
+	distB = sonarB.dist();
+	distL = sonarL.dist();
+	distR = sonarR.dist();
+	bs.writeByte(BYTE_SONAR);
 
-	if(bs.available()) {
-		if(bs.readByte() == BYTE_SONAR) {
-			bs.writeByte(BYTE_SONAR);
-			bs.writeFloat(distF);
-			bs.writeFloat(distB);
-			bs.writeFloat(distL);
-			bs.writeFloat(distR);
-		} else
-			flashLed(2);
-	}
+	bs.wait();
+	if(bs.readByte() == BYTE_SONAR) {
+		bs.writeFloat(distF);
+		bs.writeFloat(distB);
+		bs.writeFloat(distL);
+		bs.writeFloat(distR);
+	} else
+		flashLed(2);
 }

@@ -17,6 +17,10 @@ classdef RobotUI < handle
         FIG_POS = [809, 49, 784, 768];
         
         ROBOT_RADIUS = 0.125; % (m)
+        SONAR_OFFSET_F = [0; +0.1423];
+        SONAR_OFFSET_B = [0; -0.1309];
+        SONAR_OFFSET_L = [-0.1325; 0];
+        SONAR_OFFSET_R = [+0.1288; 0];
     end
     
     methods (Access = public)
@@ -80,17 +84,30 @@ classdef RobotUI < handle
                 
                 % Plot robot
                 hold off
-                plot(odm.x, odm.y, 'x', 'color', 'b')
+                plot(odm.x, odm.y, 'o', 'color', 'b')
                 hold on
                 plot(odm.x + [0 vH(1)], odm.y + [0 vH(2)], ...
                     'color', 'b', 'linewidth', 2)
-                text(odm.x, odm.y, ...
-                    ['(' num2str(odm.x, '%+.2f') ', ' ...
-                    num2str(odm.y, '%+.2f') ')'])
+                
+                % Compute sonar vectors
+                robotPos = [odm.x; odm.y];
+                sh = sin(odm.h);
+                ch = cos(odm.h);
+                rotator = [ch sh; -sh ch];
+                wF = robotPos + rotator * (obj.SONAR_OFFSET_F + [0; +odm.dF]);
+                wB = robotPos + rotator * (obj.SONAR_OFFSET_B + [0; -odm.dB]);
+                wL = robotPos + rotator * (obj.SONAR_OFFSET_L + [-odm.dL; 0]);
+                wR = robotPos + rotator * (obj.SONAR_OFFSET_R + [+odm.dR; 0]);
+                
+                % Plot sonar vectors
+                plot(wF(1), wF(2), 'x', 'color', 'r')
+                plot(wB(1), wB(2), 'x', 'color', 'r')
+                plot(wL(1), wL(2), 'x', 'color', 'r')
+                plot(wR(1), wR(2), 'x', 'color', 'r')
                 
                 % Center axis on robot and show grid
                 axis equal
-                axis([-1.1 1.1 -1.1 1.1])
+                axis([-2.0 2.0 -2.0 2.0])
                 grid on
                 
                 % Label the plot
