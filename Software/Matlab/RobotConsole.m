@@ -67,10 +67,6 @@ end
 
 %% Teleoperated Loop
 
-% DEBUG
-xMax = 0;
-yMax = 0;
-
 while 1
     displayTitle();
     disp('Teleoperated Mode')
@@ -92,23 +88,6 @@ while 1
         return
     end
     
-    % DEBUG
-    if odm.x > xMax
-        xMax = odm.x;
-    end
-    if odm.y > yMax
-        yMax = odm.y;
-    end
-    
-    % Display odometry data
-    disp('Odometry:')
-    disp(['x: ' num2str(odm.x, '%.6f') 'm'])
-    disp(['y: ' num2str(odm.y, '%.6f') 'm'])
-    disp(['h: ' num2str(odm.h * 180 / pi, '%.0f') 'deg'])
-    disp(['xMax: ' num2str(xMax, '%.6f') 'm'])
-    disp(['yMax: ' num2str(yMax, '%.6f') 'm'])
-    pause(0.1)
-    
     % Check disconnect button on UI
     if ui.disconnectPressed()
         disp('Disconnect by user.')
@@ -117,43 +96,8 @@ while 1
     end
     
     % Update user interface
-    ui.update();
-end
-
-%% Ignore remaining code for now
-return
-
-while 1
-    displayTitle();
-    
-    switch state
-        % Active robot control
-        case 'Active'
-            
-            % Disconnect command
-            if ui.disconnectPressed()
-                com.disconnect();
-                disp('Disconnected from robot.')
-                pause(1)
-                return
-            end
-            
-            % Get Robot Data
-            rd = com.getData();
-
-            % Display Data
-            displayTitle();
-            disp(['Time: ' num2str(rd.time, '%.2f') 's'])
-            disp(['Heading: ' num2str(rd.heading, '%.3f') 'rad'])
-            disp('Sonar: ')
-            disp(['    F: ' num2str(rd.sonar.f, '%.2f') 'm'])
-            disp(['    B: ' num2str(rd.sonar.b, '%.2f') 'm'])
-            disp(['    L: ' num2str(rd.sonar.l, '%.2f') 'm'])
-            disp(['    R: ' num2str(rd.sonar.r, '%.2f') 'm'])
-
-            % Graph Data
-            ui.update(rd);  
-    end
+    ui.update(odm);
+    pause(0.1)
 end
 
 %% Helper Functions

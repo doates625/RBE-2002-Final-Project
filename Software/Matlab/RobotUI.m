@@ -15,6 +15,8 @@ classdef RobotUI < handle
         dbPressed = 0;
         
         FIG_POS = [809, 49, 784, 768];
+        
+        ROBOT_RADIUS = 0.125; % (m)
     end
     
     methods (Access = public)
@@ -68,19 +70,33 @@ classdef RobotUI < handle
             drawnow
         end
         
-        % Updates UI with given robot data
-        function update(obj, rd)
+        % Updates UI with given robot odometry data
+        function update(obj, odm)
             obj.fig.Position = obj.FIG_POS;
             
+            % If robot data is given
             if nargin > 1
-                uH = [sin(rd.heading); cos(rd.heading)];
+                vH = obj.ROBOT_RADIUS * [sin(odm.h); cos(odm.h)];
+                
+                % Plot robot
                 hold off
-                plot([0 uH(1)], [0 uH(2)], 'color', 'b', 'linewidth', 2)
+                plot(odm.x, odm.y, 'x', 'color', 'b')
                 hold on
-                text(uH(1), uH(2), 'Heading')
+                plot(odm.x + [0 vH(1)], odm.y + [0 vH(2)], ...
+                    'color', 'b', 'linewidth', 2)
+                text(odm.x, odm.y, ...
+                    ['(' num2str(odm.x, '%+.2f') ', ' ...
+                    num2str(odm.y, '%+.2f') ')'])
+                
+                % Center axis on robot and show grid
                 axis equal
-                axis([-1.1, 1.1, -1.1, 1.1])
+                axis([-1.1 1.1 -1.1 1.1])
                 grid on
+                
+                % Label the plot
+                title('Field Plot');
+                xlabel('X Position (m)')
+                ylabel('Y Position (m)')
             end
             
             drawnow
