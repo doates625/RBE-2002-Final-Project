@@ -97,7 +97,6 @@ while 1
     
     % Update user interface
     ui.update(odm);
-    pause(0.1)
 end
 
 %% Helper Functions

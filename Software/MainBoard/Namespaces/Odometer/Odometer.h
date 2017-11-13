@@ -8,15 +8,14 @@
 
 #pragma once
 #include "Arduino.h"
-// #include "LinearAtmel.h"
+#include "LinearAtmel.h"
 
 //**************************************************************/
 // NAMESPACE DECLARATION
 //**************************************************************/
 
 namespace Odometer {
-	extern float robotX;
-	extern float robotY;
+	extern Vec robotPos;
 	extern float h;
 
 	uint8_t setup();

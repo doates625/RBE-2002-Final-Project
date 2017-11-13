@@ -86,8 +86,8 @@ uint8_t MatlabComms::loop() {
 				// Odometry info request
 				case BYTE_ODOMETRY:
 					bSerial.writeByte(BYTE_ODOMETRY);
-					bSerial.writeFloat(Odometer::robotX);
-					bSerial.writeFloat(Odometer::robotY);
+					bSerial.writeFloat(Odometer::robotPos(1));
+					bSerial.writeFloat(Odometer::robotPos(2));
 					bSerial.writeFloat(Odometer::h);
 					break;
 

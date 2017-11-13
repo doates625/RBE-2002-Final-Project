@@ -22,8 +22,9 @@ namespace Odometer {
 	const float halfWheelTrack = wheelTrack * 0.5;
 
 	// Field position
-	float robotX = 0;
-	float robotY = 0;
+	Vec robotPos(2);
+	Vec deltaPos(2);
+	Mat rotator(2,2);
 
 	float headingCalibration = 0;
 	float h = 0;
@@ -60,8 +61,8 @@ void Odometer::loop() {
 
 	// Get heading and change in heading
 	h = getHeading();
-	//float dH = h - hLast;
-	//hLast = h;
+	float dH = h - hLast;
+	hLast = h;
 
 	// Get encoder distances since last update
 	float dL = MotorL::motor.encoderAngle();
@@ -71,27 +72,23 @@ void Odometer::loop() {
 
 	// Compute delta position vector
 	float arc = (dL + dR) * 0.5 * wheelRadius;
-	robotX += (arc * sin(h));
-	robotY += (arc * cos(h));
-
-	/*
-	float dx, dy;
-	if(true) {
-		dx = 0;
-		dy = arc;
+	if(dH == 0) {
+		deltaPos(1) = 0;
+		deltaPos(2) = arc;
 	} else {
 		float R = arc / dH;
-		dx = R * (cos(dH) - 1.0);
-		dy = R * sin(dH);
+		deltaPos(1) = R * (cos(dH) - 1.0);
+		deltaPos(2) = R * sin(dH);
 	}
-	*/
 
 	// Rotate and add delta position vector
-	// float ch = cos(h);
-	// float sh = sin(h);
-	//robotX += ((ch * dx) + (sh * dy));
-	//robotY += ((ch * dy) - (sh * dx));
+	float ch = cos(h);
+	float sh = sin(h);
 
-	// robotX = dL;
-	// robotY = dR;
+	rotator(1,1) = ch;
+	rotator(1,2) = sh;
+	rotator(2,1) = -sh;
+	rotator(2,2) = ch;
+
+	robotPos = robotPos + rotator * deltaPos;
 }
