@@ -17,10 +17,8 @@ classdef RobotUI < handle
         FIG_POS = [809, 49, 784, 768];
         
         ROBOT_RADIUS = 0.125; % (m)
-        SONAR_OFFSET_F = [0; +0.1423];
-        SONAR_OFFSET_B = [0; -0.1309];
-        SONAR_OFFSET_L = [-0.1325; 0];
-        SONAR_OFFSET_R = [+0.1288; 0];
+        
+        sonarPoints = zeros(2,0);
     end
     
     methods (Access = public)
@@ -74,36 +72,42 @@ classdef RobotUI < handle
             drawnow
         end
         
-        % Updates UI with given robot odometry data
-        function update(obj, odm)
+        % Updates UI with given robot data
+        function update(obj, rd)
             obj.fig.Position = obj.FIG_POS;
             
             % If robot data is given
             if nargin > 1
-                vH = obj.ROBOT_RADIUS * [sin(odm.h); cos(odm.h)];
+                vH = obj.ROBOT_RADIUS * [sin(rd.heading); cos(rd.heading)];
                 
                 % Plot robot
                 hold off
-                plot(odm.x, odm.y, 'o', 'color', 'b')
+                plot(rd.pos(1), rd.pos(2), 'o', 'color', 'b')
                 hold on
-                plot(odm.x + [0 vH(1)], odm.y + [0 vH(2)], ...
+                plot(rd.pos(1) + [0 vH(1)], rd.pos(2) + [0 vH(2)], ...
                     'color', 'b', 'linewidth', 2)
                 
-                % Compute sonar vectors
-                robotPos = [odm.x; odm.y];
-                sh = sin(odm.h);
-                ch = cos(odm.h);
-                rotator = [ch sh; -sh ch];
-                wF = robotPos + rotator * (obj.SONAR_OFFSET_F + [0; +odm.dF]);
-                wB = robotPos + rotator * (obj.SONAR_OFFSET_B + [0; -odm.dB]);
-                wL = robotPos + rotator * (obj.SONAR_OFFSET_L + [-odm.dL; 0]);
-                wR = robotPos + rotator * (obj.SONAR_OFFSET_R + [+odm.dR; 0]);
+                % If robot is angled roughly orthogonally (N-S or E-W)
+                if abs(cos(2*rd.heading)) > 0.95 % ~9deg max deviation
+                    
+                    % Add non-zero sonar points to map
+                    if norm(rd.vRF) ~= 0
+                        obj.sonarPoints(1:2,end+1) = rd.vGF;
+                    end
+                    if norm(rd.vRB) ~= 0
+                        obj.sonarPoints(1:2,end+1) = rd.vGB;
+                    end
+                    if norm(rd.vRL) ~= 0
+                        obj.sonarPoints(1:2,end+1) = rd.vGL;
+                    end
+                    if norm(rd.vRR) ~= 0
+                        obj.sonarPoints(1:2,end+1) = rd.vGR;
+                    end
+                end
                 
-                % Plot sonar vectors
-                plot(wF(1), wF(2), 'x', 'color', 'r')
-                plot(wB(1), wB(2), 'x', 'color', 'r')
-                plot(wL(1), wL(2), 'x', 'color', 'r')
-                plot(wR(1), wR(2), 'x', 'color', 'r')
+                % Plot sonar points
+                plot(obj.sonarPoints(1,:), obj.sonarPoints(2,:), ...
+                    'x', 'color', 'r');
                 
                 % Center axis on robot and show grid
                 axis equal

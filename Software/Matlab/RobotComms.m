@@ -94,18 +94,12 @@ classdef RobotComms < handle
             s = 1;
         end
         
-        % Gets odometry information from robot
+        % Gets data on robot state (position, heading, sonar)
+        % rd is robot data structure
         % s = 1 if everything worked
-        function [odm, s, error] = getOdometryData(obj)
+        function [rd, s, error] = getData(obj)
             s = 0;
             error = '';
-            odm.x = 0;
-            odm.y = 0;
-            odm.h = 0;
-            odm.dF = 0;
-            odm.dB = 0;
-            odm.dL = 0;
-            odm.dR = 0;
             
             % Send odometry request to robot
             obj.serial.writeByte(obj.BYTE_ODOMETRY);
@@ -113,23 +107,41 @@ classdef RobotComms < handle
             % Check response for errors
             if obj.serial.wait(29, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_ODOMETRY
+                    rd = 0;
                     error = 'Odometry response incorrect';
                     return
                 end
             else
+                rd = 0;
                 error = 'Odometry response timeout';
                 return
             end
                
             % If all went well
             s = 1;
-            odm.x = obj.serial.readFloat();
-            odm.y = obj.serial.readFloat();
-            odm.h = obj.serial.readFloat();
-            odm.dF = obj.serial.readFloat();
-            odm.dB = obj.serial.readFloat();
-            odm.dL = obj.serial.readFloat();
-            odm.dR = obj.serial.readFloat();
+            
+            % Robot position vector (relative to start)
+            rd.pos = [...
+                obj.serial.readFloat(); ...
+                obj.serial.readFloat()];
+            
+            % Robot heading (rad)
+            rd.heading = obj.serial.readFloat();
+            sh = sin(rd.heading);
+            ch = cos(rd.heading);
+            rotator = [ch sh; -sh ch];
+            
+            % Vectors from robot to sonar points
+            rd.vRF = rotator * [0; +obj.serial.readFloat()];
+            rd.vRB = rotator * [0; -obj.serial.readFloat()];
+            rd.vRL = rotator * [-obj.serial.readFloat(); 0];
+            rd.vRR = rotator * [+obj.serial.readFloat(); 0];
+            
+            % Vectors from ground to sonar points
+            rd.vGF = rd.pos + rd.vRF;
+            rd.vGB = rd.pos + rd.vRB;
+            rd.vGL = rd.pos + rd.vRL;
+            rd.vGR = rd.pos + rd.vRR;
         end
         
         % Disconnects from bluetooth

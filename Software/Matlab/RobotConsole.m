@@ -6,7 +6,7 @@
 
 %% Clear Workspace
 close all
-clear vars
+clear
 clc
 
 %% Constants
@@ -81,7 +81,7 @@ while 1
     end
     
     % Get odometry data
-    [odm, s, error] = com.getOdometryData();
+    [rd, s, error] = com.getData();
     if s ~= 1
         disp(error)
         com.disconnect();
@@ -96,7 +96,7 @@ while 1
     end
     
     % Update user interface
-    ui.update(odm);
+    ui.update(rd);
 end
 
 %% Helper Functions
