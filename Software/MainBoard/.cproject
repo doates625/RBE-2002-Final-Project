@@ -39,6 +39,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/MatBinaryExpr/MatHcat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/LinearAtmel/MatExpr/Mat}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/DriveSystem}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/SonarComms}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/FireBot}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/Namespaces/IndicatorLed}&quot;"/>
@@ -54,6 +55,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Hc06}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Led}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Timer}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/PidController}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.cpp.sketch.input.1213989556" name="CPP source files" superClass="io.sloeber.compiler.cpp.sketch.input"/>
 							</tool>
@@ -63,6 +65,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/PidController}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.c.sketch.input.1776239148" name="C Source Files" superClass="io.sloeber.compiler.c.sketch.input"/>
 							</tool>
@@ -72,6 +75,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/core/variant}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/libraries/Wire/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/MainBoard/PidController}&quot;"/>
 								</option>
 								<inputType id="io.sloeber.compiler.S.sketch.input.2095308429" name="Assembly source files" superClass="io.sloeber.compiler.S.sketch.input"/>
 							</tool>

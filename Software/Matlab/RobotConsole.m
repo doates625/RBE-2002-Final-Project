@@ -12,7 +12,7 @@ clc
 %% Constants
 BLUETOOTH_NAME = 'Arduino';
 BLUETOOTH_CHANNEL = 1;
-TELEOP_VOLTAGE = 6;
+TELEOP_VOLTAGE = 4;
 
 %% User Interface Initialization
 displayTitle();
@@ -66,14 +66,20 @@ while 1
 end
 
 %% Teleoperated Loop
+targetHeading = 0;
 
 while 1
     displayTitle();
     disp('Teleoperated Mode')
     
     % Control drive with Xbox
-    [vL, vR] = getDriveVoltage(xbox, TELEOP_VOLTAGE);
-    [s, error] = com.setDriveVoltage(vL, vR);
+    dpad = xbox.Dpad();
+    if dpad ~= -1
+        targetHeading = dpad;
+    end
+    [~, jy] = xbox.LJS();
+    driveVoltage = jy * TELEOP_VOLTAGE;
+    [s, error] = com.drive(driveVoltage, targetHeading);
     if s ~= 1
         disp(error)
         com.disconnect();
@@ -105,12 +111,4 @@ end
 function displayTitle()
     clc
     disp(['Robot Console' newline])
-end
-
-% Gets drive voltages from Xbox controller
-function [vL, vR] = getDriveVoltage(xbox, vMax)
-    [x, y] = xbox.LJS();
-    k = vMax * sqrt(2) * 0.5;
-    vL = k*(y + x);
-    vR = k*(y - x);
 end

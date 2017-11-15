@@ -6,8 +6,11 @@
 //!a RBE-2002 B17 Team 10
 
 #include "MatlabComms.h"
+#include "Hc06.h"
+#include "BinarySerial.h"
 #include "Odometer.h"
 #include "SonarComms.h"
+#include "DriveSystem.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -80,8 +83,10 @@ uint8_t MatlabComms::loop() {
 				case BYTE_TELEOP:
 					if(!bSerial.wait(8, TIMEOUT)) return 3;
 					bSerial.writeByte(BYTE_TELEOP);
-					driveVoltageL = bSerial.readFloat();
-					driveVoltageR = bSerial.readFloat();
+					DriveSystem::driveVoltage =
+						bSerial.readFloat();
+					DriveSystem::targetHeading =
+						bSerial.readFloat();
 					break;
 
 				// Odometry info request
@@ -89,7 +94,7 @@ uint8_t MatlabComms::loop() {
 					bSerial.writeByte(BYTE_ODOMETRY);
 					bSerial.writeFloat(Odometer::robotPos(1));
 					bSerial.writeFloat(Odometer::robotPos(2));
-					bSerial.writeFloat(Odometer::h);
+					bSerial.writeFloat(Odometer::heading);
 					bSerial.writeFloat(SonarComms::distF);
 					bSerial.writeFloat(SonarComms::distB);
 					bSerial.writeFloat(SonarComms::distL);

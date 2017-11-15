@@ -27,7 +27,7 @@ namespace Odometer {
 	Mat rotator(2,2);
 
 	float headingCalibration = 0;
-	float h = 0;
+	float heading = 0;
 	float hLast = 0;
 
 	// Bno055 IMU
@@ -60,9 +60,9 @@ float Odometer::getHeading() {
 void Odometer::loop() {
 
 	// Get heading and change in heading
-	h = getHeading();
-	float dH = h - hLast;
-	hLast = h;
+	heading = getHeading();
+	float dH = heading - hLast;
+	hLast = heading;
 
 	// Get encoder distances since last update
 	float dL = MotorL::motor.encoderAngle();
@@ -82,8 +82,8 @@ void Odometer::loop() {
 	}
 
 	// Rotate and add delta position vector
-	float ch = cos(h);
-	float sh = sin(h);
+	float ch = cos(heading);
+	float sh = sin(heading);
 
 	rotator(1,1) = ch;
 	rotator(1,2) = sh;

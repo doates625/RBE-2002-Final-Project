@@ -12,6 +12,8 @@
 // MAIN FUNCTION DEFINITIONS
 //*************************************************************//
 
+using namespace DriveSystem;
+
 //!b Executes once on Arduino reset.
 void setup() {
 	FireBot::setup();

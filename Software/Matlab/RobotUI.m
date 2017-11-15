@@ -18,7 +18,8 @@ classdef RobotUI < handle
         
         ROBOT_RADIUS = 0.125; % (m)
         
-        sonarPoints = zeros(2,0);
+        hWallPoints = zeros(2,0);
+        vWallPoints = zeros(2,0);
     end
     
     methods (Access = public)
@@ -87,26 +88,54 @@ classdef RobotUI < handle
                 plot(rd.pos(1) + [0 vH(1)], rd.pos(2) + [0 vH(2)], ...
                     'color', 'b', 'linewidth', 2)
                 
-                % If robot is angled roughly orthogonally (N-S or E-W)
-                if abs(cos(2*rd.heading)) > 0.95 % ~9deg max deviation
+                % If robot is facing N-S
+                if abs(cos(rd.heading)) > 0.985
                     
-                    % Add non-zero sonar points to map
+                    % Add front and rear sonar to horizontal wall points
+                    %{
                     if norm(rd.vRF) ~= 0
-                        obj.sonarPoints(1:2,end+1) = rd.vGF;
+                        obj.hWallPoints(1:2,end+1) = rd.vGF;
                     end
                     if norm(rd.vRB) ~= 0
-                        obj.sonarPoints(1:2,end+1) = rd.vGB;
+                        obj.hWallPoints(1:2,end+1) = rd.vGB;
                     end
+                    %}
+                    
+                    % Add left and right sonar to vertical wall points
                     if norm(rd.vRL) ~= 0
-                        obj.sonarPoints(1:2,end+1) = rd.vGL;
+                        obj.vWallPoints(1:2,end+1) = rd.vGL;
                     end
                     if norm(rd.vRR) ~= 0
-                        obj.sonarPoints(1:2,end+1) = rd.vGR;
+                        obj.vWallPoints(1:2,end+1) = rd.vGR;
+                    end    
+                end
+                
+                % If robot is facing E-W
+                if abs(sin(rd.heading)) > 0.985
+                    
+                    % Add left and right sonar to horizontal wall points
+                    if norm(rd.vRL) ~= 0
+                        obj.hWallPoints(1:2,end+1) = rd.vGL;
                     end
+                    if norm(rd.vRR) ~= 0
+                        obj.hWallPoints(1:2,end+1) = rd.vGR;
+                    end
+                    
+                    % Add front and rear sonar to vertical wall points
+                    %{
+                    if norm(rd.vRF) ~= 0
+                        obj.vWallPoints(1:2,end+1) = rd.vGF;
+                    end
+                    if norm(rd.vRB) ~= 0
+                        obj.vWallPoints(1:2,end+1) = rd.vGB;
+                    end
+                    %}
                 end
                 
                 % Plot sonar points
-                plot(obj.sonarPoints(1,:), obj.sonarPoints(2,:), ...
+                plot(obj.hWallPoints(1,:), obj.hWallPoints(2,:), ...
+                    'x', 'color', 'b');
+                plot(obj.vWallPoints(1,:), obj.vWallPoints(2,:), ...
                     'x', 'color', 'r');
                 
                 % Center axis on robot and show grid

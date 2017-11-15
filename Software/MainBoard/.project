@@ -77,6 +77,11 @@
 			<location>C:/Users/Dan_2/Desktop/LinearAtmel/LinearAtmel</location>
 		</link>
 		<link>
+			<name>libraries/PidController</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/PidController</location>
+		</link>
+		<link>
 			<name>libraries/Timer</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Timer</location>

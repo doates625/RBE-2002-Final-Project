@@ -67,26 +67,26 @@ classdef RobotComms < handle
             end
         end
         
-        % Sends drive voltages to robot and waits for response
+        % Commands robot to drive at 'voltage' towards 'heading' (deg)
         % s is connection status (1 = good, 0 = bad)
         % error is an empty string or an error message if s = 0
-        function [s, error] = setDriveVoltage(obj, vL, vR)
+        function [s, error] = drive(obj, voltage, heading)
             s = 0;
             error = '';
             
             % Send teleop command to robot
             obj.serial.writeByte(obj.BYTE_TELEOP);
-            obj.serial.writeFloat(vL);
-            obj.serial.writeFloat(vR);
+            obj.serial.writeFloat(voltage);
+            obj.serial.writeFloat(deg2rad(heading));
             
             % Check response for errors
             if obj.serial.wait(1, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_TELEOP
-                    error = 'Teleop response incorrect';
+                    error = 'Drive response incorrect';
                     return
                 end
             else
-                error = 'Teleop response timeout';
+                error = 'Drive response timeout';
                 return
             end
             

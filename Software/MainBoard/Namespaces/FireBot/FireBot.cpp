@@ -20,8 +20,7 @@ void FireBot::setup() {
 
 	// Initialize LED and Drive Motors
 	IndicatorLed::setup();
-	MotorL::setup();
-	MotorR::setup();
+	DriveSystem::setup();
 
 	// Initialize Odometer
 	switch(Odometer::setup()) {
@@ -77,22 +76,18 @@ void FireBot::loop() {
 		case 3: error(5); break; // Teleop data timeout
 		default: break;
 	}
-
-	// Drive robot with teleop commands
-	MotorL::motor.setVoltage(MatlabComms::driveVoltageL);
-	MotorR::motor.setVoltage(MatlabComms::driveVoltageR);
-
-	// Check if Matlab disconnected
 	if(MatlabComms::disconnected) {
-		MotorL::motor.brake();
-		MotorR::motor.brake();
+		DriveSystem::stop();
 		IndicatorLed::led.off();
+		while(1);
 	}
+
+	// Drive motors
+	DriveSystem::loop();
 }
 
 //!b Stops robot motion and flashes LED n times
 void FireBot::error(uint8_t n) {
-	MotorL::motor.brake();
-	MotorR::motor.brake();
+	DriveSystem::stop();
 	IndicatorLed::flash(n);
 }

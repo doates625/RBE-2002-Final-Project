@@ -2,21 +2,26 @@
 // TITLE
 //**************************************************************/
 
-//!t MatlabComms.h
-//!b Namespace for final project Matlab communication system.
+//!t DriveSystem.h
+//!b Namespace for final project robot drive system.
 //!a RBE-2002 B17 Team 10
 
 #pragma once
-#include "Arduino.h"
+#include "PidController.h"
 
 //**************************************************************/
 // NAMESPACE DECLARATION
 //**************************************************************/
 
-namespace MatlabComms {
-	extern bool disconnected;
+namespace DriveSystem {
+	extern PidController headingPid;
+	extern float targetHeading;
+	extern float driveVoltage;
 
-	uint8_t setup();
-	uint8_t waitForBegin();
-	uint8_t loop();
+	void setup();
+	void loop();
+
+	bool atTargetHeading();
+	void resetPids();
+	void stop();
 }
