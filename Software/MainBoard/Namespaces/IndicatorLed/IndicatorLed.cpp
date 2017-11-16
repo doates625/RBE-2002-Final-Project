@@ -12,8 +12,6 @@
 //**************************************************************/
 
 namespace IndicatorLed {
-	bool isSetup = false;
-
 	Led led(PIN_LED);
 }
 
@@ -21,12 +19,10 @@ namespace IndicatorLed {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes namespace and LED.
+//!b Initializes indicator LED.
+//!d Call this method in the main setup function.
 void IndicatorLed::setup() {
-	if(!isSetup) {
-		isSetup = true;
-		led.setup();
-	}
+	led.setup();
 }
 
 //!b Flashes LED n times in a loop forever.

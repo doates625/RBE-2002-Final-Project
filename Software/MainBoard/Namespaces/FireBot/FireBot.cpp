@@ -11,11 +11,12 @@
 // NAMESPACE FUNCTION DEFINITIONS
 //*************************************************************//
 
-//!b Executes once on Arduino reset.
+//!b Initializes FireBot.
+//!d Call this method in the main setup function.
 //!d Tasks:
 //!d - Initialize all namespaces for robot
 //!d - Check for communication or initialization errors
-//!d - Blink indicator LED if error occurs
+//!d - Blink indicator LED corresponding to any errors.
 void FireBot::setup() {
 
 	// Initialize LED and Drive Motors
@@ -52,6 +53,7 @@ void FireBot::setup() {
 }
 
 //!b Executes repeatedly after Arduino reset.
+//!d Call this method in the main loop function.
 //!d Tasks:
 //!d - Update odometer and position estimation
 //!d - Check messages from Matlab
@@ -86,7 +88,7 @@ void FireBot::loop() {
 	DriveSystem::loop();
 }
 
-//!b Stops robot motion and flashes LED n times
+//!b Stops robot driving and flashes LED n times in a loop.
 void FireBot::error(uint8_t n) {
 	DriveSystem::stop();
 	IndicatorLed::flash(n);

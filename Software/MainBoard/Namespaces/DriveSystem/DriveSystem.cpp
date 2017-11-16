@@ -16,42 +16,50 @@
 
 namespace DriveSystem {
 
+	// Initial control variables
+	float targetHeading = 0.0;
+	float driveVoltage = 0.0;
+
+	// Used to detect change in target heading
+	float lastTargetHeading = targetHeading;
+
 	// Heading PID Controller
 	// Input: Angular error (rad)
 	// Output: Differential motor voltage (V)
+	const float KP = 6.0;
+	const float KI = 1.5;
+	const float KD = 0.5;
+	const float MAX_TURNING_VOLTAGE = 4.0;
+	const float PID_RESET_TIME = 1.0;
 
-	float PID_KP = 6.0;
-	float PID_KI = 1.5;
-	float PID_KD = 0.5;
-	float PID_VMAX = 4.0;
-	float PID_TRST = 1.0;
-
-	PidController headingPid(
-		PID_KP,
-		PID_KI,
-		PID_KD,
-		-PID_VMAX,
-		+PID_VMAX,
-		PID_TRST);
-
-	float targetHeading = 0.0;
-	float driveVoltage = 0.0;
+	PidController headingPid(KP, KI, KD,
+		-MAX_TURNING_VOLTAGE,
+		+MAX_TURNING_VOLTAGE,
+		PID_RESET_TIME);
 }
 
 //**************************************************************/
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes drive motors (call in setup).
+//!b Initializes drive system motors.
+//!d Call this method in the main setup function.
 void DriveSystem::setup() {
 	MotorL::setup();
 	MotorR::setup();
 }
 
 //!b Drives motors and steers towards target heading
+//!d Call this method in the main loop function.
 void DriveSystem::loop() {
 
-	// Compute error
+	// Reset PID controller if target heading changes
+	if(targetHeading != lastTargetHeading) {
+		headingPid.reset();
+	}
+	lastTargetHeading = targetHeading;
+
+	// Compute PID error
 	float err;
 	float hc = Odometer::heading;
 	float ht = targetHeading;
@@ -67,20 +75,6 @@ void DriveSystem::loop() {
 	float diffVoltage = headingPid.update(err);
 	MotorL::motor.setVoltage(driveVoltage + diffVoltage);
 	MotorR::motor.setVoltage(driveVoltage - diffVoltage);
-
-	// If angle is stabilized, reset PID
-	if(atTargetHeading())
-		headingPid.reset();
-}
-
-//!b Returns true if drive system is at target heading.
-bool DriveSystem::atTargetHeading() {
-	return headingPid.steadyState(0.02, 0.001);
-}
-
-//!b Resets all PID controllers in namespace.
-void DriveSystem::resetPids() {
-	headingPid.reset();
 }
 
 //!b Immediately stops drive motors.

@@ -6,6 +6,9 @@
 //!b Namespace for final project robot indicator LED.
 //!a RBE-2002 B17 Team 10
 
+//!d The indicator LED is used to indicate robot state and
+//!d errors without a complex external interface.
+
 #pragma once
 #include "Led.h"
 
@@ -15,11 +18,10 @@
 
 namespace IndicatorLed {
 
-	// Arduino LED pin
+	// Arduino LED
 	const uint8_t PIN_LED = 13;
 	extern Led led;
 
-	// Function templates
 	void setup();
 	void flash(uint8_t = 1);
 }

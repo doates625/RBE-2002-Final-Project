@@ -13,8 +13,19 @@
 
 // Motor object
 namespace MotorR {
-	bool isSetup = false;
 
+	// Arduino Pin Connections
+	const uint8_t PIN_ENABLE = 5;
+	const uint8_t PIN_FORWARD = 7;
+	const uint8_t PIN_REVERSE = 6;
+	const uint8_t PIN_ENCODER_A = 19;
+	const uint8_t PIN_ENCODER_B = 18;
+
+	// Motor Physical Properties
+	const float TERMINAL_VOLTAGE = 12.0;
+	const float ENCODER_CPR = 3200.0;
+
+	// Motor Object
 	DcMotor motor(
 		TERMINAL_VOLTAGE,
 		PIN_ENABLE,
@@ -23,28 +34,29 @@ namespace MotorR {
 		PIN_ENCODER_A,
 		PIN_ENCODER_B,
 		ENCODER_CPR);
+
+	// Private function templates
+	void interruptA();
+	void interruptB();
 }
 
 //**************************************************************/
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes and enables motor.
-//!d Call this method in setup.
+//!b Initializes and enables motor and encoder ISRs.
+//!d Call this method in the main setup function.
 void MotorR::setup() {
-	if(!isSetup) {
-		isSetup = true;
-		motor.setup();
-		motor.enable();
-		attachInterrupt(
-			motor.getInterruptA(),
-			interruptA,
-			CHANGE);
-		attachInterrupt(
-			motor.getInterruptB(),
-			interruptB,
-			CHANGE);
-	}
+	motor.setup();
+	motor.enable();
+	attachInterrupt(
+		motor.getInterruptA(),
+		interruptA,
+		CHANGE);
+	attachInterrupt(
+		motor.getInterruptB(),
+		interruptB,
+		CHANGE);
 }
 
 //!b Performs ISR for motor encoder A.
