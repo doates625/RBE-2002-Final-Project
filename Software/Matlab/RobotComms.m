@@ -1,39 +1,46 @@
 classdef RobotComms < handle
-    %ROBOTCOMMS Summary of this class goes here
-    %   Detailed explanation goes here
+    %ROBOTCOMMS Bluetooth communication system for RBE-2002 robot.
+    %   Created by RBE-2002 B17 Team 10.
+    %   
+    %   The robot communicates with Matlab over an Hc-06 Bluetooth module.
+    %   They communicate via basic serial messages beginning with a byte
+    %   conveying the message type followed by any included data. Timeouts
+    %   exist on both the Matlab and robot ends to detect connection
+    %   errors.
+    %   
+    %   See also: ROBOTDATA
     
     properties (Access = private)
-        name;
-        channel;
-        port;
-        serial;
+        % Bluetooth Communication
+        name;       % Name of Bluetooth module (string)
+        channel;    % Bluetooth channel (number)
+        port;       % Bluetooth serial port object
+        serial;     % Arduino serial interface object
         
-        TIMEOUT = 1.0; % (s)
-        
-        BYTE_CONNECT = hex2dec('01');
-        BYTE_TELEOP = hex2dec('02');
-        BYTE_ODOMETRY = hex2dec('03');
-        BYTE_DISCONNECT = hex2dec('04');
+        % Serial Protocol
+        TIMEOUT = 1.0;                      % Byte message timeout (s).
+        BYTE_CONNECT    = hex2dec('01');    % Connect & start robot
+        BYTE_TELEOP     = hex2dec('02');    % Teleop commands
+        BYTE_ODOMETRY   = hex2dec('03');    % Odometry requests
+        BYTE_DISCONNECT = hex2dec('04');    % Disconnect
     end
     
     methods
-        
-        % Class constructor
         function obj = RobotComms(name, channel)
+            % Constructs communication system over bluetooth module.
+            %   name = name of bluetooth module
+            %   channel = channel of bluetooth module
             obj.name = name;
             obj.channel = channel;
         end
-        
-        % Connects to Robot
-        % s is connection status (1 for good, 0 for bad)
-        % msg is a string relating to the connection status
         function [s, msg] = connect(obj)
-
-            % Build Bluetooth serial interface
+            % Attempts connection to robot bluetooth module.
+            %   s = connection status (1 for good, 0 for failure)
+            %   msg = string message relating to connection status
             obj.port = Bluetooth(obj.name, obj.channel);
             obj.serial = ArduinoSerial(obj.port);
             
-            % Connect to Bluetooth module
+            % Attempt connection
             try
                 obj.serial.open();
                 s = 1;
@@ -45,17 +52,17 @@ classdef RobotComms < handle
                 return
             end
         end
-        
-        % Sends begin message to robot
-        % s is the connection status (1 = good, 0 = bad)
-        % error is an empty string or an error message if s = 0
-        function [s, error] = startRobot(obj)
+        function [s, error] = start(obj)
+            % Sends begin message to robot and waits for acknowledge.
+            %   s = acknowledge status (1 for success, 0 for failure)
+            %   error = '' or error message string if connection failed
             s = 0;
             error = '';
             
-            % Send connect byte to robot
-            obj.serial.flush();
+            % Send begin command to robot
             obj.serial.writeByte(obj.BYTE_CONNECT);
+            
+            % Wait for acknowledge
             if obj.serial.wait(1, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_CONNECT
                     error = 'Arduino Mega sent bad byte.';
@@ -65,12 +72,16 @@ classdef RobotComms < handle
                 error = 'Arduino Mega timed out.';
                 return
             end
+            
+            % If all went well
+            s = 1;
         end
-        
-        % Commands robot to drive at 'voltage' towards 'heading' (deg)
-        % s is connection status (1 = good, 0 = bad)
-        % error is an empty string or an error message if s = 0
         function [s, error] = drive(obj, voltage, heading)
+            % Sends teleop drive command to robot
+            %   voltage = forward drive voltage (negative for reverse)
+            %   heading = target heading to face towards
+            %   s = acknowledge status (1 for ok, 0 for failure)
+            %   error = '' or error message string relating to failure
             s = 0;
             error = '';
             
@@ -79,7 +90,7 @@ classdef RobotComms < handle
             obj.serial.writeFloat(voltage);
             obj.serial.writeFloat(deg2rad(heading));
             
-            % Check response for errors
+            % Wait for acknowledge
             if obj.serial.wait(1, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_TELEOP
                     error = 'Drive response incorrect';
@@ -93,18 +104,18 @@ classdef RobotComms < handle
             % If all went well
             s = 1;
         end
-        
-        % Gets data on robot state (position, heading, sonar)
-        % rd is robot data structure
-        % s = 1 if everything worked
         function [rd, s, error] = getData(obj)
+            % Requests data on robot state (position, heading, sonar, etc.)
+            %   rd = RobotData class containing current robot data
+            %   s = data response status (1 for ok, 0 for failure)
+            %   error = '' or error message string relating to failure
             s = 0;
             error = '';
             
-            % Send odometry request to robot
+            % Request odometry data from robot
             obj.serial.writeByte(obj.BYTE_ODOMETRY);
             
-            % Check response for errors
+            % Wait for data to return
             if obj.serial.wait(29, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_ODOMETRY
                     rd = 0;
@@ -117,45 +128,27 @@ classdef RobotComms < handle
                 return
             end
                
-            % If all went well
+            % Read robot data if all went well
             s = 1;
-            
-            % Robot position vector (relative to start)
-            rd.pos = [...
-                obj.serial.readFloat(); ...
-                obj.serial.readFloat()];
-            
-            % Robot heading (rad)
-            rd.heading = obj.serial.readFloat();
-            sh = sin(rd.heading);
-            ch = cos(rd.heading);
-            rotator = [ch sh; -sh ch];
-            
-            % Vectors from robot to sonar points
-            rd.vRF = rotator * [0; +obj.serial.readFloat()];
-            rd.vRB = rotator * [0; -obj.serial.readFloat()];
-            rd.vRL = rotator * [-obj.serial.readFloat(); 0];
-            rd.vRR = rotator * [+obj.serial.readFloat(); 0];
-            
-            % Vectors from ground to sonar points
-            rd.vGF = rd.pos + rd.vRF;
-            rd.vGB = rd.pos + rd.vRB;
-            rd.vGL = rd.pos + rd.vRL;
-            rd.vGR = rd.pos + rd.vRR;
+            x = obj.serial.readFloat();
+            y = obj.serial.readFloat();
+            h = obj.serial.readFloat();
+            sF = obj.serial.readFloat();
+            sB = obj.serial.readFloat();
+            sL = obj.serial.readFloat();
+            sR = obj.serial.readFloat();
+            rd = RobotData(x, y, h, sF, sB, sL, sR);
         end
-        
-        % Disconnects from bluetooth
         function disconnect(obj)
+            % Sends stop message to robot then disconnects from Bluetooth.
             if obj.serial.connected()
                 obj.serial.writeByte(obj.BYTE_DISCONNECT);
                 obj.serial.close();
             end
         end
-        
-        % Class destructor
         function delete(obj)
+            % Disconnects from robot before destructing.
             obj.disconnect();
         end
     end
 end
-

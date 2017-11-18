@@ -26,10 +26,10 @@ namespace DriveSystem {
 	// Heading PID Controller
 	// Input: Angular error (rad)
 	// Output: Differential motor voltage (V)
-	const float KP = 6.0;
-	const float KI = 1.5;
-	const float KD = 0.5;
-	const float MAX_TURNING_VOLTAGE = 4.0;
+	const float KP = 10.0;
+	const float KI = 0.5;
+	const float KD = 1.0;
+	const float MAX_TURNING_VOLTAGE = 3.5;
 	const float PID_RESET_TIME = 1.0;
 
 	PidController headingPid(KP, KI, KD,
