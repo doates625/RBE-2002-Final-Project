@@ -53,6 +53,12 @@ float Odometer::getHeading() {
 	return imu.heading() - headingCalibration;
 }
 
+//!b Returns IMU yawrate (rad/s).
+//!d Returned rate is clockwise-positive to match with heading.
+float Odometer::getYawrate() {
+	return -imu.gZ();
+}
+
 //!b Updates robot position using IMU and encoders.
 void Odometer::loop() {
 

@@ -13,16 +13,10 @@ clc
 BLUETOOTH_NAME = 'Arduino';
 BLUETOOTH_CHANNEL = 1;
 TELEOP_VOLTAGE = 4;
-MAX_LOOPS = 5000;
+MAX_LOOPS = 10000;
 LOG_NAME = 'RobotLog.mat';
 
 %% User Interface Initialization
-try
-    xbox = XboxController(1, 0.1, 1.5);
-catch
-    displayTitle('Xbox controller not connected!')
-    return
-end
 ui = RobotUI();
 robot = RobotComms(BLUETOOTH_NAME, BLUETOOTH_CHANNEL);
 map = MapBuilder();
@@ -74,7 +68,7 @@ if ~replay
             robot.disconnect();
             return
         else 
-            disp('Press ''Begin'' to begin teleop.')
+            disp('Press ''Begin'' to begin autonomous.')
             disp('Press ''Disconnect'' to terminate program.')
         end
 
@@ -84,42 +78,28 @@ end
 
 %% Robot Loop (Teleop or Replay)
 loopCount = 1;
-if replay  
+if ~replay  
+    robotLog = RobotData.empty(0, MAX_LOOPS);
+else
     load(LOG_NAME);
     MAX_LOOPS = length(robotLog);
-else
-    robotLog = RobotData.empty(0, MAX_LOOPS);
 end
 targetHeading = 0;
 
 while 1
-    displayTitle('Teleoperated Mode');
-    disp(['Loop: ' int2str(loopCount)])
-
     if ~replay
-        % Control drive with Xbox
-        dpad = xbox.dPad();
-        if dpad ~= -1 && mod(dpad, 90) == 0
-            targetHeading = dpad;
-        end
-        js = xbox.LJS();
-        driveVoltage = js(2) * TELEOP_VOLTAGE;
-        [s, error] = robot.drive(driveVoltage, targetHeading);
-        if s == 0
-            disp(error)
-            robot.disconnect();
-            break
-        end
+        % Teleoperated Loop
+        displayTitle('Autonomous Mode');
+        disp(['Loop: ' int2str(loopCount)])
         
         % Get odometry data and update map
         [rd, s, error] = robot.getData();
         if s == 0
             disp(error)
             robot.disconnect();
-            return
+            break
         end
         robotLog(loopCount) = rd;
-        map.update(rd);
 
         % Check disconnect button on UI
         if ui.disconnectButton()
@@ -128,9 +108,49 @@ while 1
             break
         end
     else
+        % Replay Loop
+        displayTitle('Replay Mode');
+        disp(['Loop: ' int2str(loopCount)])
+        
+        % Get recorded robot data
         rd = robotLog(loopCount);
+        
+        % Check disconnect button on UI
+        if ui.disconnectButton()
+            disp('Simulation cancelled.')
+            break
+        end
+    end
+
+    % Update map if robot is moving
+    if loopCount > 1
+        if isequal(rd.pos, robotLog(loopCount-1).pos)
+            disp('Robot Stationary!')
+        else
+            slip = map.update(rd);
+            if norm(slip) ~= 0
+                disp('Wheel slip detected!')
+                if replay
+                    for i = loopCount + 1 : MAX_LOOPS
+                        robotLog(i).removeSlip(slip);
+                    end
+                else
+                    % Send slip to robot?
+                    % robot.sendSlippage(slip)
+                end
+            end
+        end
+    else
         map.update(rd);
     end
+    
+    % Status Display
+    disp(['Position: (' ...
+        num2str(rd.pos(1), '%.2f') ', ' ...
+        num2str(rd.pos(2), '%.2f'), ')'])
+    disp(['Heading: ' num2str(rad2deg(rd.heading), '%.0f')])
+    disp(['Alignment: ' rd.getAlignment()])
+    disp(['State: ' rd.state])
 
     % Update UI and plots
     cla
@@ -152,10 +172,12 @@ while 1
     end
 end
 
-%% Save robot log in replay file
+%% Post Robot Loop
+
+% Save robot log for replays
 if ~replay
     save(LOG_NAME, 'robotLog');
-    disp(['Robot log saved in ''' LOG_NAME '.mat'''])
+    disp(['Robot log saved in ''' LOG_NAME ''''])
 end
 
 %% Helper Functions

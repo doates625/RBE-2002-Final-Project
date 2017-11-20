@@ -11,6 +11,7 @@
 #include "Odometer.h"
 #include "SonarComms.h"
 #include "DriveSystem.h"
+#include "WallFollower.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -22,15 +23,14 @@ namespace MatlabComms {
 	HardwareSerial*
 		PORT = &Serial;
 	const unsigned long
-		BAUD = 115200;
+		BAUD = 57600;
 	const float
 		TIMEOUT = 1.0; // (s)
 
 	// Byte message definitions
 	const byte BYTE_CONNECT = 0x01;
-	const byte BYTE_TELEOP = 0x02;
-	const byte BYTE_ODOMETRY = 0x03;
-	const byte BYTE_DISCONNECT = 0x04;
+	const byte BYTE_GETDATA = 0x02;
+	const byte BYTE_DISCONNECT = 0x03;
 
 	// Communication objects
 	BinarySerial bSerial(*PORT, BAUD);
@@ -87,19 +87,9 @@ uint8_t MatlabComms::loop() {
 			// Check message type byte
 			switch(bSerial.readByte()) {
 
-				// Teleop command
-				case BYTE_TELEOP:
-					if(!bSerial.wait(8, TIMEOUT)) return 3;
-					bSerial.writeByte(BYTE_TELEOP);
-					DriveSystem::driveVoltage =
-						bSerial.readFloat();
-					DriveSystem::targetHeading =
-						bSerial.readFloat();
-					break;
-
-				// Odometry info request
-				case BYTE_ODOMETRY:
-					bSerial.writeByte(BYTE_ODOMETRY);
+				// Robot data request
+				case BYTE_GETDATA:
+					bSerial.writeByte(BYTE_GETDATA);
 					bSerial.writeFloat(Odometer::robotPos(1));
 					bSerial.writeFloat(Odometer::robotPos(2));
 					bSerial.writeFloat(Odometer::heading);
@@ -107,6 +97,7 @@ uint8_t MatlabComms::loop() {
 					bSerial.writeFloat(SonarComms::distB);
 					bSerial.writeFloat(SonarComms::distL);
 					bSerial.writeFloat(SonarComms::distR);
+					bSerial.writeByte(WallFollower::getState());
 					break;
 
 				// Disconnect message

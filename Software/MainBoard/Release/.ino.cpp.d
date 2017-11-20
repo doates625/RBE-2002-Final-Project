@@ -37,6 +37,7 @@
  C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\MatlabComms/MatlabComms.h \
  C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\SonarComms/SonarComms.h \
  C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h \
+ C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\WallFollower/WallFollower.h \
  ..\MainBoard.ino
 
 C:\sloeber\arduinoPlugin\packages\arduino\hardware\avr\1.6.20\cores\arduino/Arduino.h:
@@ -114,5 +115,7 @@ C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\Matl
 C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\SonarComms/SonarComms.h:
 
 C:\Users\Dan_2\Desktop\ArduinoLibs\BinarySerial/BinarySerial.h:
+
+C:\Users\Dan_2\Desktop\RBE-2002-Final-Project\Software\MainBoard\Namespaces\WallFollower/WallFollower.h:
 
 ..\MainBoard.ino:

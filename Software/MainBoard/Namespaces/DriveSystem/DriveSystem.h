@@ -22,10 +22,11 @@
 //**************************************************************/
 
 namespace DriveSystem {
-	extern float targetHeading;
-	extern float driveVoltage;
-
 	void setup();
-	void loop();
+
+	bool driveAtHeading(float, float);
+	void driveAtYawrate(float, float);
+
+	void resetPids();
 	void stop();
 }

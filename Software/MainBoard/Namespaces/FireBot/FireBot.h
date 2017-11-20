@@ -15,6 +15,7 @@
 #include "Odometer.h"
 #include "MatlabComms.h"
 #include "SonarComms.h"
+#include "WallFollower.h"
 
 //*************************************************************//
 // MAIN FUNCTION DECLARATIONS

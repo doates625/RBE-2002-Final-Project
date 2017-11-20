@@ -11,18 +11,27 @@ classdef RobotComms < handle
     %   See also: ROBOTDATA
     
     properties (Access = private)
-        % Bluetooth Communication
         name;       % Name of Bluetooth module (string)
         channel;    % Bluetooth channel (number)
         port;       % Bluetooth serial port object
         serial;     % Arduino serial interface object
+    end
+    
+    properties (Access = private, Constant)
+        TIMEOUT = 1.0;  % Byte message timeout (s).
         
-        % Serial Protocol
-        TIMEOUT = 1.0;                      % Byte message timeout (s).
+        % Message Type Bytes
         BYTE_CONNECT    = hex2dec('01');    % Connect & start robot
-        BYTE_TELEOP     = hex2dec('02');    % Teleop commands
-        BYTE_ODOMETRY   = hex2dec('03');    % Odometry requests
-        BYTE_DISCONNECT = hex2dec('04');    % Disconnect
+        BYTE_GETDATA    = hex2dec('02');    % Robot data requests
+        BYTE_DISCONNECT = hex2dec('03');    % Disconnect
+        
+        % State Indicator Bytes
+        BYTE_STATE_STOPPED        = hex2dec('01');
+        BYTE_STATE_FORWARD        = hex2dec('02');
+        BYTE_STATE_PRE_TURN_LEFT  = hex2dec('03');
+        BYTE_STATE_TURN_LEFT      = hex2dec('04');
+        BYTE_STATE_POST_TURN_LEFT = hex2dec('05');
+        BYTE_STATE_TURN_RIGHT     = hex2dec('06');
     end
     
     methods
@@ -76,34 +85,6 @@ classdef RobotComms < handle
             % If all went well
             s = 1;
         end
-        function [s, error] = drive(obj, voltage, heading)
-            % Sends teleop drive command to robot
-            %   voltage = forward drive voltage (negative for reverse)
-            %   heading = target heading to face towards
-            %   s = acknowledge status (1 for ok, 0 for failure)
-            %   error = '' or error message string relating to failure
-            s = 0;
-            error = '';
-            
-            % Send teleop command to robot
-            obj.serial.writeByte(obj.BYTE_TELEOP);
-            obj.serial.writeFloat(voltage);
-            obj.serial.writeFloat(deg2rad(heading));
-            
-            % Wait for acknowledge
-            if obj.serial.wait(1, obj.TIMEOUT)
-                if obj.serial.readByte() ~= obj.BYTE_TELEOP
-                    error = 'Drive response incorrect';
-                    return
-                end
-            else
-                error = 'Drive response timeout';
-                return
-            end
-            
-            % If all went well
-            s = 1;
-        end
         function [rd, s, error] = getData(obj)
             % Requests data on robot state (position, heading, sonar, etc.)
             %   rd = RobotData class containing current robot data
@@ -113,11 +94,11 @@ classdef RobotComms < handle
             error = '';
             
             % Request odometry data from robot
-            obj.serial.writeByte(obj.BYTE_ODOMETRY);
+            obj.serial.writeByte(obj.BYTE_GETDATA);
             
             % Wait for data to return
-            if obj.serial.wait(29, obj.TIMEOUT)
-                if obj.serial.readByte() ~= obj.BYTE_ODOMETRY
+            if obj.serial.wait(30, obj.TIMEOUT)
+                if obj.serial.readByte() ~= obj.BYTE_GETDATA
                     rd = 0;
                     error = 'Odometry response incorrect';
                     return
@@ -137,13 +118,32 @@ classdef RobotComms < handle
             sB = obj.serial.readFloat();
             sL = obj.serial.readFloat();
             sR = obj.serial.readFloat();
-            rd = RobotData(x, y, h, sF, sB, sL, sR);
+            
+            switch obj.serial.readByte()
+                case obj.BYTE_STATE_STOPPED
+                    state = 'Stopped';            
+                case obj.BYTE_STATE_FORWARD
+                    state = 'Forward';
+                case obj.BYTE_STATE_PRE_TURN_LEFT
+                    state = 'Pre-left turn';
+                case obj.BYTE_STATE_TURN_LEFT
+                    state = 'Turning left';
+                case obj.BYTE_STATE_POST_TURN_LEFT
+                    state = 'Post-left turn';
+                case obj.BYTE_STATE_TURN_RIGHT
+                    state = 'Turning right';
+                otherwise
+                    state = 'ERROR';
+            end
+            rd = RobotData(x, y, h, sF, sB, sL, sR, state);
         end
         function disconnect(obj)
             % Sends stop message to robot then disconnects from Bluetooth.
-            if obj.serial.connected()
-                obj.serial.writeByte(obj.BYTE_DISCONNECT);
-                obj.serial.close();
+            if isa(obj.serial, 'ArduinoSerial')
+                if obj.serial.connected()
+                    obj.serial.writeByte(obj.BYTE_DISCONNECT);
+                    obj.serial.close();
+                end
             end
         end
         function delete(obj)

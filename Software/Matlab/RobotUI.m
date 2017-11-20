@@ -85,7 +85,7 @@ classdef RobotUI < handle
             % Redraws UI and resets pushbutton statuses
             obj.fig.Position = obj.figurePosition;
             axis equal
-            axis([-2.0 2.0 -2.0 2.0])
+            axis([-2 +1 -1 +1])
             grid on
             title('Field Plot');
             xlabel('X Position (m)')

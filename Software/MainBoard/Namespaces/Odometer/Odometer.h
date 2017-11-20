@@ -23,5 +23,6 @@ namespace Odometer {
 
 	uint8_t setup();
 	float getHeading();
+	float getYawrate();
 	void loop();
 }

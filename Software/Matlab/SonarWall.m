@@ -8,21 +8,26 @@ classdef SonarWall < handle
     %   
     %   See also: SONARWALLX, SONARWALLY
     
-    properties (Access = protected, Constant)
-        edgeLimit = 0.07;
-        normalLimit = 0.02;
+    properties (Access = public)
+        age = 0;        % How many iterations old the wall is
+        dormancy = 0;   % Number of iterations since last point added
+        points = 1;     % How many points the wall contains
     end
     
-    properties (Access = public) % MAKE PROTECTED POST DEBUG
-        age = 0;    % How many iterations old the wall is
-        points = 1; % How many points the wall contains
+    properties (Access = protected, Constant)
+        edgeLimit = 0.2;    % Maximum parallel edge offset of new point.
+        normalLimit = 0.04; % Maximum perpendicular offset of new point.
     end
     
     methods
-        function [age] = incrementAge(obj)
-            % Adds 1 to age of wall and returns new age.
+        function [len] = getLength(~)
+            % Returns length of wall (overridden).
+            len = 0;
+        end
+        function incrementAge(obj)
+            % Adds 1 to age of wall and dormancy.
             obj.age = obj.age + 1;
-            age = obj.age;
+            obj.dormancy = obj.dormancy + 1;
         end
         function [m] = isMistake(obj)
             % Returns logical 1 if wall is likely a sonar mistake

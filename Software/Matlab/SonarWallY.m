@@ -4,13 +4,13 @@ classdef SonarWallY < SonarWall
     %   
     %   See also: SONARWALL, SONARWALLX
     
-    properties (Access = public) % MAKE PRIVATE POST DEBUG
+    properties (Access = public)
         xPos;   % x-position of wall (meters)
         yMin;   % minimum y-position (meters)
         yMax;   % maximum y-position (meters)
     end
     
-    methods
+    methods (Access = public)
         function obj = SonarWallY(pos)
             % Constructs y-wall from given position vector.
             % pos = Point to build wall from ([x; y])
@@ -20,13 +20,19 @@ classdef SonarWallY < SonarWall
         end
         function [f] = fitsPoint(obj, point)
             % Returns logical 1 if point ([x; y]) fits in wall boundaries.
-            x = point(1);
-            y = point(2);
-            f = (abs(x - obj.xPos) < obj.normalLimit) && ...
-                (y > obj.yMin - obj.edgeLimit) && ...
-                (y < obj.yMax + obj.edgeLimit);
+            f = (abs(point(1) - obj.xPos) < obj.normalLimit) && ...
+                obj.inYBounds(point(2));
+                
         end
-        function [point] = addPoint(obj, point)
+        function [f] = onPositiveSide(obj, point)
+            % Returns 1 if point is on +x side of wall and within y-bounds.
+            f = (point(1) > obj.xPos) && obj.inYBounds(point(2));
+        end
+        function [f] = onNegativeSide(obj, point)
+            % Returns 1 if point is on -x side of wall and within y-bounds.
+            f = (point(1) < obj.xPos) && obj.inYBounds(point(2));
+        end
+        function addPoint(obj, point)
             % Expands wall by adding point ([x; y]) to its hypothesis.
             x = point(1);
             y = point(2);
@@ -41,13 +47,27 @@ classdef SonarWallY < SonarWall
             elseif y < obj.yMin
                 obj.yMin = y;
             end
+            
+            % Reset dormancy
+            obj.dormancy = 0;
+        end       
+        function [len] = getLength(obj)
+            % Returns length of wall in meters.
+            len = obj.yMax - obj.yMin;
         end
-        function plot(obj)
-            % Plots wall as solid red line on current axes.
+        function plot(obj, plotFmt)
+            % Plots wall on current axis.
+            % plotFmt can be '--', '-bo', 'rx', etc.
             x = [obj.xPos obj.xPos];
             y = [obj.yMin obj.yMax];
-            plot(x, y, 'color', 'r')
-            plot(x, y, 'x', 'color', 'r')
+            plot(x, y, plotFmt)
+        end
+    end
+    methods (Access = private)
+        function [f] = inYBounds(obj, y)
+            % Returns true if y fits in wall y-boundaries
+            f = (y > obj.yMin - obj.edgeLimit) && ...
+                (y < obj.yMax + obj.edgeLimit);
         end
     end
 end

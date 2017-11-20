@@ -19,9 +19,10 @@
 //!d - Blink indicator LED corresponding to any errors.
 void FireBot::setup() {
 
-	// Initialize LED and Drive Motors
+	// Initialize Namespaces
 	IndicatorLed::setup();
 	DriveSystem::setup();
+	WallFollower::setup();
 
 	// Initialize Odometer
 	switch(Odometer::setup()) {
@@ -50,6 +51,9 @@ void FireBot::setup() {
 		case 1: error(5); break;
 		default: break;
 	}
+
+	// Begin wall-following.
+	WallFollower::begin();
 }
 
 //!b Executes repeatedly after Arduino reset.
@@ -84,8 +88,8 @@ void FireBot::loop() {
 		while(1);
 	}
 
-	// Drive motors
-	DriveSystem::loop();
+	// Run one iteration of wall-follower
+	WallFollower::loop();
 }
 
 //!b Stops robot driving and flashes LED n times in a loop.

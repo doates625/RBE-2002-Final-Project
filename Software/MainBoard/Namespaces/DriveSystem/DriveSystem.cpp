@@ -16,26 +16,33 @@
 
 namespace DriveSystem {
 
-	// Initial control variables
-	float targetHeading = 0.0;
-	float driveVoltage = 0.0;
-
-	// Used to detect change in target heading
-	float lastTargetHeading = targetHeading;
-
 	// Heading PID Controller
 	// Input: Angular error (rad)
-	// Output: Differential motor voltage (V)
-	const float KP = 10.0;
-	const float KI = 0.5;
-	const float KD = 1.0;
-	const float MAX_TURNING_VOLTAGE = 3.5;
-	const float PID_RESET_TIME = 1.0;
+	// Output: Differential drive voltage (V)
+	const float H_KP = 50.0;
+	const float H_KI = 0.1;
+	const float H_KD = 1.0;
+	const float H_VMAX = 3.5; // Max output voltage (V)
+	const float H_TRST = 0.5; // Reset time (s)
 
-	PidController headingPid(KP, KI, KD,
-		-MAX_TURNING_VOLTAGE,
-		+MAX_TURNING_VOLTAGE,
-		PID_RESET_TIME);
+	PidController headingPid(H_KP, H_KI, H_KD,
+		-H_VMAX,
+		+H_VMAX,
+		H_TRST);
+
+	// Yawrate PID Controller
+	// Input: Angular velocity (rad/s)
+	// Output: Differential drive voltage (V)
+	const float Y_KP = 1.5;
+	const float Y_KI = 30.0;
+	const float Y_KD = 0.0;
+	const float Y_VMAX = 3.5; // Max output voltage (V)
+	const float Y_TRST = 0.5; // Reset time (s)
+
+	PidController yawratePid(Y_KP, Y_KI, Y_KD,
+		-Y_VMAX,
+		+Y_VMAX,
+		Y_TRST);
 }
 
 //**************************************************************/
@@ -49,20 +56,15 @@ void DriveSystem::setup() {
 	MotorR::setup();
 }
 
-//!b Drives motors and steers towards target heading
-//!d Call this method in the main loop function.
-void DriveSystem::loop() {
-
-	// Reset PID controller if target heading changes
-	if(targetHeading != lastTargetHeading) {
-		headingPid.reset();
-	}
-	lastTargetHeading = targetHeading;
+//!b Drives robot and turns towards target heading.
+//!d Returns true if robot is stabilized at that heading.
+//!i Forward drive voltage (- for reverse drive)
+//!i Target heading in rad (PID-controlled)
+bool DriveSystem::driveAtHeading(float vDrive, float ht) {
 
 	// Compute PID error
 	float err;
 	float hc = Odometer::heading;
-	float ht = targetHeading;
 	if(ht <= PI) {
 		if(hc <= ht + PI) err = ht - hc;
 		else err = ht + TWO_PI - hc;
@@ -72,13 +74,33 @@ void DriveSystem::loop() {
 	}
 
 	// Update PID controller and drive motors
-	float diffVoltage = headingPid.update(err);
-	MotorL::motor.setVoltage(driveVoltage + diffVoltage);
-	MotorR::motor.setVoltage(driveVoltage - diffVoltage);
+	float vDiff = headingPid.update(err);
+	MotorL::motor.setVoltage(vDrive + vDiff);
+	MotorR::motor.setVoltage(vDrive - vDiff);
+
+	// Check if robot is at steady state
+	return headingPid.steadyState(0.05, 0.001);
 }
 
-//!b Immediately stops drive motors.
+//!b Drives robot and turns at target yawrate.
+//!i Forward drive voltage (- for reverse drive)
+//!i Target yawrate in rad/s (PID-controlled)
+void DriveSystem::driveAtYawrate(float vDrive, float yt) {
+	float yc = Odometer::getYawrate();
+	float vDiff = yawratePid.update(yt - yc);
+	MotorL::motor.setVoltage(vDrive + vDiff);
+	MotorR::motor.setVoltage(vDrive - vDiff);
+}
+
+//!b Resets all PID controllers in namespace.
+void DriveSystem::resetPids() {
+	headingPid.reset();
+	yawratePid.reset();
+}
+
+//!b Immediately stops drive motors and resets PID controllers.
 void DriveSystem::stop() {
 	MotorL::motor.brake();
 	MotorR::motor.brake();
+	resetPids();
 }
