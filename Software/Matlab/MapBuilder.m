@@ -38,18 +38,13 @@ classdef MapBuilder < handle
                 case {'+x', '-x'}
                     
                     % Calculate wheel slippage
-                    %{
                     switch alignment
                         case '+x'
                             wallF = obj.refWallXp;   
                             wallB = obj.refWallXm;
-                            wallL = obj.refWallYp;
-                            wallR = obj.refWallYm;
                         case '-x'
                             wallF = obj.refWallXm;
                             wallB = obj.refWallXp;
-                            wallL = obj.refWallYm;
-                            wallR = obj.refWallYp;
                     end
                     if ~isempty(wallF)
                         slip = slip + [rd.sonarF(1) - wallF.xPos; 0];
@@ -57,19 +52,9 @@ classdef MapBuilder < handle
                     if ~isempty(wallB)
                         slip = slip + [rd.sonarB(1) - wallB.xPos; 0];
                     end
-                    if ~isempty(wallL)
-                        slip = slip + [0; rd.sonarL(2) - wallL.yPos];
-                    end
-                    if ~isempty(wallR)
-                        slip = slip + [0; rd.sonarR(2) - wallR.yPos];
-                    end
                     if ~isempty(wallF) && ~isempty(wallB)
                         slip(1) = slip(1) * 0.5;
                     end
-                    if ~isempty(wallL) && ~isempty(wallR)
-                        slip(2) = slip(2) * 0.5;
-                    end
-                    %}
 
                     % Build y-walls from front and rear sonar
                     if rd.sFvalid, obj.addToYWalls(rd.sonarF); end
@@ -81,18 +66,13 @@ classdef MapBuilder < handle
                 case {'+y', '-y'}
                     
                     % Calculate wheel slippage
-                    %{
                     switch alignment
                         case '+y'
                             wallF = obj.refWallYp;
                             wallB = obj.refWallYm;
-                            wallL = obj.refWallXm;
-                            wallR = obj.refWallXp;
                         case '-y'
                             wallF = obj.refWallYm;
                             wallB = obj.refWallYp;
-                            wallL = obj.refWallXp;
-                            wallR = obj.refWallXm;
                     end
                     if ~isempty(wallF)
                         slip = slip + [0; rd.sonarF(2) - wallF.yPos];
@@ -100,19 +80,9 @@ classdef MapBuilder < handle
                     if ~isempty(wallB)
                         slip = slip + [0; rd.sonarB(2) - wallB.yPos];
                     end
-                    if ~isempty(wallL)
-                        slip = slip + [rd.sonarL(1) - wallL.xPos; 0];
-                    end
-                    if ~isempty(wallR)
-                        slip = slip + [rd.sonarR(1) - wallR.xPos; 0];
-                    end
                     if ~isempty(wallF) && ~isempty(wallB)
                         slip(2) = slip(2) * 0.5;
                     end
-                    if ~isempty(wallL) && ~isempty(wallR)
-                        slip(1) = slip(1) * 0.5;
-                    end
-                    %}
 
                     % Build x-walls from front and rear sonar
                     if rd.sFvalid, obj.addToXWalls(rd.sonarF); end
@@ -124,13 +94,11 @@ classdef MapBuilder < handle
             end
             
             % Remove wheel slippage if not too large
-            %{
-            if norm(slip) <= 0.1
+            if norm(slip) <= 0.2
                 rd.removeSlip(slip);
             else
                 slip = [0; 0];
             end
-            %}
             
             % Age x-walls and remove mistakes
             remove = [];

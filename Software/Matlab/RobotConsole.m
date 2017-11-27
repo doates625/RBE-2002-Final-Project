@@ -1,30 +1,31 @@
-%ROBOTCONSOLE Script for RBE-2002 Final Project Robot
+%ROBOTCONSOLE Function for RBE-2002 Final Project Robot
 %   Created by RBE-2002 B17 Team 10.
 %   
-%   This script handles runs robot user-interface, Bluetooth communication,
-%   and displays script and robot status via the Matlab command line.
+%   This function handles the robot user-interface, Bluetooth,
+%   and SLAM for field mapping and position correction.
+%
+%   See also: ROBOTUI, ROBOTCOMMS, MAPBUILDER
 
-%% Clear Workspace
+%% Initialization
+% Clear workspace
 close all
 clear all
 clc
 
-%% Constants
-BLUETOOTH_NAME = 'Arduino';
-BLUETOOTH_CHANNEL = 1;
-TELEOP_VOLTAGE = 4;
-MAX_LOOPS = 10000;
-LOG_NAME = 'RobotLog.mat';
-
-%% User Interface Initialization
+% 
 ui = RobotUI();
-robot = RobotComms(BLUETOOTH_NAME, BLUETOOTH_CHANNEL);
+robot = RobotComms('Arduino', 1);
 map = MapBuilder();
+logName = 'RobotLog.mat';
 
-%% Connect to Robot or Replay Log
+%% First User Input
+% Options:
+% - Connect to robot
+% - Replay last robot run
+% - Terminate program
 replay = 0;
 while 1
-    displayTitle('Awaiting input');
+    displayTitle('Awaiting Input');
 
     if ui.connectButton()
         disp('Connecting to robot...')
@@ -42,18 +43,26 @@ while 1
         replay = 1;
         pause(1)
         break
+    elseif ui.disconnectButton()
+        disp('Program terminated.')
+        return
     else
         disp('Press ''Connect'' to connect to robot.')
         disp('Press ''Replay'' to simulate last run.')
+        disp('Press ''Disconnect'' to terminate program.')
     end
 
     ui.update();
 end
 
-%% Begin Teleop or Disconnect
+%% Second User Input
+% Runs only if robot is connected to.
+% Options:
+% - Begin robot operations
+% - Disconnect from robot
 if ~replay
     while 1
-        displayTitle('Awaiting input');
+        displayTitle('Awaiting Input');
 
         if ui.beginButton()
             [s, error] = robot.start();
@@ -76,21 +85,25 @@ if ~replay
     end
 end
 
-%% Robot Loop (Teleop or Replay)
-loopCount = 1;
+%% Robot Loop (Autonomous or Replay
+% Initialization
+loop = 1;
 if ~replay  
-    robotLog = RobotData.empty(0, MAX_LOOPS);
+    maxLoops = 1000;
+    robotLog = RobotData.empty(0, maxLoops);
 else
-    load(LOG_NAME);
-    MAX_LOOPS = length(robotLog);
+    logFile = load(logName, 'robotLog');
+    robotLog = logFile.robotLog;
+    clear('logFile')
+    maxLoops = length(robotLog);
 end
-targetHeading = 0;
 
+% Loop
 while 1
     if ~replay
         % Teleoperated Loop
         displayTitle('Autonomous Mode');
-        disp(['Loop: ' int2str(loopCount)])
+        disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         
         % Get odometry data and update map
         [rd, s, error] = robot.getData();
@@ -99,7 +112,7 @@ while 1
             robot.disconnect();
             break
         end
-        robotLog(loopCount) = rd;
+        robotLog(loop) = rd;
 
         % Check disconnect button on UI
         if ui.disconnectButton()
@@ -110,10 +123,10 @@ while 1
     else
         % Replay Loop
         displayTitle('Replay Mode');
-        disp(['Loop: ' int2str(loopCount)])
+        disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         
         % Get recorded robot data
-        rd = robotLog(loopCount);
+        rd = robotLog(loop);
         
         % Check disconnect button on UI
         if ui.disconnectButton()
@@ -123,15 +136,15 @@ while 1
     end
 
     % Update map if robot is moving
-    if loopCount > 1
-        if isequal(rd.pos, robotLog(loopCount-1).pos)
+    if loop > 1
+        if isequal(rd.pos, robotLog(loop-1).pos)
             disp('Robot Stationary!')
         else
             slip = map.update(rd);
             if norm(slip) ~= 0
                 disp('Wheel slip detected!')
                 if replay
-                    for i = loopCount + 1 : MAX_LOOPS
+                    for i = loop + 1 : maxLoops
                         robotLog(i).removeSlip(slip);
                     end
                 else
@@ -161,14 +174,14 @@ while 1
     hold off
     
     % Increment loop count or exit if at max
-    if loopCount == MAX_LOOPS
+    if loop == maxLoops
         disp('Max communication loops reached!')
         if ~replay
             robot.disconnect();
         end
         break
     else
-        loopCount = loopCount + 1;
+        loop = loop + 1;
     end
 end
 
@@ -176,8 +189,8 @@ end
 
 % Save robot log for replays
 if ~replay
-    save(LOG_NAME, 'robotLog');
-    disp(['Robot log saved in ''' LOG_NAME ''''])
+    save(logName, 'robotLog');
+    disp(['Robot log saved in ''' logName ''''])
 end
 
 %% Helper Functions
@@ -185,6 +198,8 @@ end
 function displayTitle(subtitle)
     % Clears command line and displays program title and subtitle
     clc
-    disp('Robot Console')
-    disp([subtitle newline])
+    disp('-------------------------------------------------')
+    disp('ROBOT CONSOLE')
+    disp(subtitle)
+    disp('-------------------------------------------------')
 end
