@@ -85,7 +85,7 @@ if ~replay
     end
 end
 
-%% Robot Loop (Autonomous or Replay
+%% Robot Loop (Autonomous or Replay)
 % Initialization
 loop = 1;
 if ~replay  
@@ -97,6 +97,7 @@ else
     clear('logFile')
     maxLoops = length(robotLog);
 end
+netSlip = [0; 0];
 
 % Loop
 while 1
@@ -107,6 +108,7 @@ while 1
         
         % Get odometry data and update map
         [rd, s, error] = robot.getData();
+        rd.removeSlip(netSlip);
         if s == 0
             disp(error)
             robot.disconnect();
@@ -127,6 +129,7 @@ while 1
         
         % Get recorded robot data
         rd = robotLog(loop);
+        rd.removeSlip(netSlip);
         
         % Check disconnect button on UI
         if ui.disconnectButton()
@@ -140,18 +143,7 @@ while 1
         if isequal(rd.pos, robotLog(loop-1).pos)
             disp('Robot Stationary!')
         else
-            slip = map.update(rd);
-            if norm(slip) ~= 0
-                disp('Wheel slip detected!')
-                if replay
-                    for i = loop + 1 : maxLoops
-                        robotLog(i).removeSlip(slip);
-                    end
-                else
-                    % Send slip to robot?
-                    % robot.sendSlippage(slip)
-                end
-            end
+            netSlip = netSlip + map.update(rd);
         end
     else
         map.update(rd);

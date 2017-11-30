@@ -24,6 +24,9 @@ classdef RobotData < handle
         
         state = ''; % Robot state
     end
+    properties (Access = private, Constant)
+        radius = 0.14; % Approximate robot radius (m)
+    end
     
     methods
         function obj = RobotData(x, y, h, sF, sB, sL, sR, state)
@@ -85,24 +88,21 @@ classdef RobotData < handle
             % Plots robot data on current axes.
             
             % Plot robot position and heading
-            plot(obj.pos(1), obj.pos(2), 'o', 'color', 'b')
-            hVec = 0.125 * [sin(obj.heading); cos(obj.heading)];
-            plot(obj.pos(1) + [0 hVec(1)], obj.pos(2) + [0 hVec(2)], ...
-                'color', 'b', 'linewidth', 2)
+            theta = linspace(0,2*pi,12);
+            rx = obj.pos(1);
+            ry = obj.pos(2);
+            cx = rx + obj.radius * cos(theta);
+            cy = ry + obj.radius * sin(theta);
+            hx = rx + [0 obj.radius * sin(obj.heading)];
+            hy = ry + [0 obj.radius * cos(obj.heading)];
+            plot(cx, cy, 'color', 'm', 'linewidth', 2)
+            plot(hx, hy, 'color', 'm', 'linewidth', 2)
 
             % Plot sonar vectors from robot to walls
-            plot([obj.pos(1) obj.sonarF(1)], ...
-                 [obj.pos(2) obj.sonarF(2)], ...
-                 '--kx')
-            plot([obj.pos(1) obj.sonarB(1)], ...
-                 [obj.pos(2) obj.sonarB(2)], ...
-                 '--kx')
-            plot([obj.pos(1) obj.sonarL(1)], ...
-                 [obj.pos(2) obj.sonarL(2)], ...
-                 '--kx')
-            plot([obj.pos(1) obj.sonarR(1)], ...
-                 [obj.pos(2) obj.sonarR(2)], ...
-                 '--kx')
+            plot([rx obj.sonarF(1)], [ry obj.sonarF(2)], '--kx')
+            plot([rx obj.sonarB(1)], [ry obj.sonarB(2)], '--kx')
+            plot([rx obj.sonarL(1)], [ry obj.sonarL(2)], '--kx')
+            plot([rx obj.sonarR(1)], [ry obj.sonarR(2)], '--kx')
         end
     end
 end

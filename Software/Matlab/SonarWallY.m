@@ -42,9 +42,14 @@ classdef SonarWallY < SonarWall
                 (y >= obj.yMin) && ...
                 (y <= obj.yMax);
         end
-        function addPoint(obj, point)
+        function addPoint(obj, point, side)
             % Expands wall by adding point ([x; y]) to its hypothesis.
-            x = point(1);
+            % Side is the side of the wall the point is on ('+x' or '-x').
+            switch side
+                case '+x', x = point(1) - obj.radius;
+                case '-x', x = point(1) + obj.radius;
+                otherwise, error('Side should be +x or -x');
+            end
             y = point(2);
             
             % Include x position in average
@@ -68,8 +73,12 @@ classdef SonarWallY < SonarWall
         function plot(obj, plotFmt)
             % Plots wall on current axis.
             % plotFmt can be '--', '-bo', 'rx', etc.
-            x = [obj.xPos obj.xPos];
-            y = [obj.yMin obj.yMax];
+            x0 = obj.xPos - obj.radius;
+            x1 = obj.xPos + obj.radius;
+            y0 = obj.yMin;
+            y1 = obj.yMax;
+            x = [x0 x1 x1 x0 x0];
+            y = [y0 y0 y1 y1 y0];
             plot(x, y, plotFmt)
         end
     end
