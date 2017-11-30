@@ -37,15 +37,13 @@ namespace Odometer {
 
 //!b Initializes and zeroes IMU.
 //!d Call this method in the main setup function.
-//!d Return codes:
-//!d - 0: Everything worked.
-//!d - 1: IMU connection failed.
-uint8_t Odometer::setup() {
+//!d Returns true or false indicating IMU connection status.
+bool Odometer::setup() {
 	if(imu.setup()) {
 		headingCalibration = imu.heading();
-		return 0;
+		return true;
 	} else
-		return 1;
+		return false;
 }
 
 //!b Returns IMU heading relative to starting orientation.

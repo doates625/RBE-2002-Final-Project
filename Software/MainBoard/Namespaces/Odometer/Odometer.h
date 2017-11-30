@@ -21,7 +21,7 @@ namespace Odometer {
 	extern Vec robotPos;
 	extern float heading;
 
-	uint8_t setup();
+	bool setup();
 	float getHeading();
 	float getYawrate();
 	void loop();

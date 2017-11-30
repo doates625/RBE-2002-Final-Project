@@ -14,11 +14,17 @@
 #include "DriveSystem.h"
 #include "Odometer.h"
 #include "MatlabComms.h"
-#include "SonarComms.h"
+#include "Sonar.h"
 #include "WallFollower.h"
 
 //*************************************************************//
-// MAIN FUNCTION DECLARATIONS
+// MACRO DEFINITIONS
+//*************************************************************//
+
+// #define MATLAB_ENABLED
+
+//*************************************************************//
+// NAMESPACE DECLARATION
 //*************************************************************//
 
 namespace FireBot {

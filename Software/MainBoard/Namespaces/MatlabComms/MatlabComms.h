@@ -21,7 +21,7 @@
 namespace MatlabComms {
 	extern bool disconnected;
 
-	uint8_t setup();
-	uint8_t waitForBegin();
+	bool setup();
+	bool waitForBegin();
 	uint8_t loop();
 }

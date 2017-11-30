@@ -6,7 +6,7 @@
 //!a RBE-2002 B17 Team 10
 
 #include "WallFollower.h"
-#include "SonarComms.h"
+#include "Sonar.h"
 #include "DriveSystem.h"
 #include "PidController.h"
 
@@ -80,19 +80,19 @@ byte WallFollower::getState() {
 //!b Returns true if robot is near left wall.
 //!d If left sonar is invalid, assumes true.
 bool WallFollower::nearLeftWall() {
-	if(SonarComms::distL == 0)
+	if(Sonar::distL == 0)
 		return true;
 	else
-		return (SonarComms::distL <= WALL_DISTANCE + 0.2);
+		return (Sonar::distL <= WALL_DISTANCE + 0.2);
 }
 
 //!b Returns true if robot is near front wall.
 //!b If front sonar is invalid, assumes false.
 bool WallFollower::nearFrontWall() {
-	if(SonarComms::distF == 0)
+	if(Sonar::distF == 0)
 		return false;
 	else
-		return (SonarComms::distF <= WALL_DISTANCE);
+		return (Sonar::distF <= WALL_DISTANCE);
 }
 
 //!b Performs wall-following loop.
@@ -106,10 +106,12 @@ void WallFollower::loop() {
 
 		// Driving forwards
 		case FORWARD:
-			DriveSystem::driveAtYawrate(
-				DRIVE_VOLTAGE,
-				wallPid.update(
-					WALL_DISTANCE - SonarComms::distL));
+			if(Sonar::distL != 0) {
+				DriveSystem::driveAtYawrate(
+					DRIVE_VOLTAGE,
+					wallPid.update(
+						WALL_DISTANCE - Sonar::distL));
+			}
 			if(!nearLeftWall()) {
 				driveTimer.tic();
 				state = PRE_TURN_LEFT;

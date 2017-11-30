@@ -62,6 +62,11 @@
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Hc06</location>
 		</link>
 		<link>
+			<name>libraries/HcSr04Array</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/HcSr04Array</location>
+		</link>
+		<link>
 			<name>libraries/ISquaredC</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/ISquaredC</location>
@@ -82,9 +87,19 @@
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/PidController</location>
 		</link>
 		<link>
+			<name>libraries/PinChangeInt</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/PinChangeInt</location>
+		</link>
+		<link>
 			<name>libraries/Timer</name>
 			<type>2</type>
 			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/Timer</location>
+		</link>
+		<link>
+			<name>libraries/TimerOne</name>
+			<type>2</type>
+			<location>C:/Users/Dan_2/Desktop/ArduinoLibs/TimerOne</location>
 		</link>
 		<link>
 			<name>libraries/Wire</name>
