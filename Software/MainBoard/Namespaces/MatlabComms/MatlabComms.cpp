@@ -86,8 +86,8 @@ uint8_t MatlabComms::loop() {
 				// Robot data request
 				case BYTE_GETDATA:
 					bSerial.writeByte(BYTE_GETDATA);
-					bSerial.writeFloat(Odometer::robotPos(1));
-					bSerial.writeFloat(Odometer::robotPos(2));
+					bSerial.writeFloat(Odometer::position(1));
+					bSerial.writeFloat(Odometer::position(2));
 					bSerial.writeFloat(Odometer::heading);
 					bSerial.writeFloat(Sonar::distF);
 					bSerial.writeFloat(Sonar::distB);

@@ -20,10 +20,10 @@ classdef MapBuilder < handle
     end
     
     methods (Access = public)
-        function [slip] = update(obj, rd)
+        function [slip] = update(obj, rd, removeSlip)
             % Incorporates RobotData 'rd' into new map approximation and
-            % returns estimated wheel slippage vector.
-            % Perform: rd.pos = rd.pos - slip;
+            % returns estimated wheel slippage vecto if removeSlip == 1
+            % Perform: rd.pos = rd.pos - slip.
             slip = [0; 0];
             
             % Compute reference walls
@@ -38,24 +38,26 @@ classdef MapBuilder < handle
                 case {'+x', '-x'}
                     
                     % Calculate and remove wheel slippage
-                    switch alignment
-                        case '+x'
-                            wallF = obj.refWallXp;   
-                            wallB = obj.refWallXm;
-                        case '-x'
-                            wallF = obj.refWallXm;
-                            wallB = obj.refWallXp;
+                    if removeSlip
+                        switch alignment
+                            case '+x'
+                                wallF = obj.refWallXp;   
+                                wallB = obj.refWallXm;
+                            case '-x'
+                                wallF = obj.refWallXm;
+                                wallB = obj.refWallXp;
+                        end
+                        if ~isempty(wallF)
+                            slip = slip + [rd.sonarF(1) - wallF.xPos; 0];
+                        end
+                        if ~isempty(wallB)
+                            slip = slip + [rd.sonarB(1) - wallB.xPos; 0];
+                        end
+                        if ~isempty(wallF) && ~isempty(wallB)
+                            slip(1) = slip(1) * 0.5;
+                        end
+                        rd.removeSlip(slip);
                     end
-                    if ~isempty(wallF)
-                        slip = slip + [rd.sonarF(1) - wallF.xPos; 0];
-                    end
-                    if ~isempty(wallB)
-                        slip = slip + [rd.sonarB(1) - wallB.xPos; 0];
-                    end
-                    if ~isempty(wallF) && ~isempty(wallB)
-                        slip(1) = slip(1) * 0.5;
-                    end
-                    rd.removeSlip(slip);
 
                     % Build walls from corrected sonar
                     switch alignment 
@@ -75,25 +77,27 @@ classdef MapBuilder < handle
                 case {'+y', '-y'}
                     
                     % Calculate and remove wheel slippage
-                    switch alignment
-                        case '+y'
-                            wallF = obj.refWallYp;
-                            wallB = obj.refWallYm;
-                        case '-y'
-                            wallF = obj.refWallYm;
-                            wallB = obj.refWallYp;
+                    if removeSlip
+                        switch alignment
+                            case '+y'
+                                wallF = obj.refWallYp;
+                                wallB = obj.refWallYm;
+                            case '-y'
+                                wallF = obj.refWallYm;
+                                wallB = obj.refWallYp;
+                        end
+                        if ~isempty(wallF)
+                            slip = slip + [0; rd.sonarF(2) - wallF.yPos];
+                        end
+                        if ~isempty(wallB)
+                            slip = slip + [0; rd.sonarB(2) - wallB.yPos];
+                        end
+                        if ~isempty(wallF) && ~isempty(wallB)
+                            slip(2) = slip(2) * 0.5;
+                        end
+                        rd.removeSlip(slip);
                     end
-                    if ~isempty(wallF)
-                        slip = slip + [0; rd.sonarF(2) - wallF.yPos];
-                    end
-                    if ~isempty(wallB)
-                        slip = slip + [0; rd.sonarB(2) - wallB.yPos];
-                    end
-                    if ~isempty(wallF) && ~isempty(wallB)
-                        slip(2) = slip(2) * 0.5;
-                    end
-                    rd.removeSlip(slip);
-
+                    
                     % Build walls from corrected sonar
                     switch alignment 
                         case '+y'

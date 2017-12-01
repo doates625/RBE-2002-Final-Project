@@ -28,10 +28,11 @@ classdef RobotComms < handle
         % State Indicator Bytes
         BYTE_STATE_STOPPED        = hex2dec('01');
         BYTE_STATE_FORWARD        = hex2dec('02');
-        BYTE_STATE_PRE_TURN_LEFT  = hex2dec('03');
-        BYTE_STATE_TURN_LEFT      = hex2dec('04');
-        BYTE_STATE_POST_TURN_LEFT = hex2dec('05');
-        BYTE_STATE_TURN_RIGHT     = hex2dec('06');
+        BYTE_STATE_CHECK_LEFT     = hex2dec('03');
+        BYTE_STATE_PRE_TURN_LEFT  = hex2dec('04');
+        BYTE_STATE_TURN_LEFT      = hex2dec('05');
+        BYTE_STATE_POST_TURN_LEFT = hex2dec('06');
+        BYTE_STATE_TURN_RIGHT     = hex2dec('07');
     end
     
     methods
@@ -124,6 +125,8 @@ classdef RobotComms < handle
                     state = 'Stopped';            
                 case obj.BYTE_STATE_FORWARD
                     state = 'Forward';
+                case obj.BYTE_STATE_CHECK_LEFT
+                    state = 'Check left';
                 case obj.BYTE_STATE_PRE_TURN_LEFT
                     state = 'Pre-left turn';
                 case obj.BYTE_STATE_TURN_LEFT

@@ -18,7 +18,7 @@ classdef RobotUI < handle
         
         % Figure Constants
         figurePosition = [809, 49, 784, 768];   % On the screen
-        mapLimits = [-0.5, 1.5, -1.5, 1.0];     % Field map limits (m)
+        mapLimits = [-2.0, +1.0, -0.5, +2.5];   % Field map limits (m)
         
         % UI Handles
         fig;        % Figure handle

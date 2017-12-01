@@ -21,9 +21,9 @@ namespace WallFollower {
 	void begin();
 	byte getState();
 
-	void loop();
 	bool nearLeftWall();
 	bool nearFrontWall();
+	void loop();
 
 	float targetHeading();
 	void setDirectionLeft();

@@ -23,10 +23,6 @@
 
 namespace DriveSystem {
 	void setup();
-
-	bool driveAtHeading(float, float);
-	void driveAtYawrate(float, float);
-
-	void resetPids();
+	bool driveAtHeading(float, bool);
 	void stop();
 }

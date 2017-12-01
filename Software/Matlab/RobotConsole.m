@@ -12,11 +12,12 @@ close all
 clear all
 clc
 
-% 
+% Create interface objects
 ui = RobotUI();
 robot = RobotComms('Arduino', 1);
 map = MapBuilder();
 logName = 'RobotLog.mat';
+removeSlip = 0;
 
 %% First User Input
 % Options:
@@ -89,7 +90,7 @@ end
 % Initialization
 loop = 1;
 if ~replay  
-    maxLoops = 1000;
+    maxLoops = 10000;
     robotLog = RobotData.empty(0, maxLoops);
 else
     logFile = load(logName, 'robotLog');
@@ -108,12 +109,12 @@ while 1
         
         % Get odometry data and update map
         [rd, s, error] = robot.getData();
-        rd.removeSlip(netSlip);
         if s == 0
             disp(error)
             robot.disconnect();
             break
         end
+        rd.removeSlip(netSlip);
         robotLog(loop) = rd;
 
         % Check disconnect button on UI
@@ -143,10 +144,10 @@ while 1
         if isequal(rd.pos, robotLog(loop-1).pos)
             disp('Robot Stationary!')
         else
-            netSlip = netSlip + map.update(rd);
+            netSlip = netSlip + map.update(rd, removeSlip);
         end
     else
-        map.update(rd);
+        map.update(rd, removeSlip);
     end
     
     % Status Display

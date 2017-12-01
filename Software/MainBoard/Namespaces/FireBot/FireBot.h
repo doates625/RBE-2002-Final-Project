@@ -21,7 +21,7 @@
 // MACRO DEFINITIONS
 //*************************************************************//
 
-// #define MATLAB_ENABLED
+#define MATLAB_ENABLED
 
 //*************************************************************//
 // NAMESPACE DECLARATION

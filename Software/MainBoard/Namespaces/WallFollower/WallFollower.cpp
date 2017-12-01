@@ -7,6 +7,7 @@
 
 #include "WallFollower.h"
 #include "Sonar.h"
+#include "Odometer.h"
 #include "DriveSystem.h"
 #include "PidController.h"
 
@@ -20,10 +21,11 @@ namespace WallFollower {
 	enum state_t {
 		STOPPED = 1,
 		FORWARD = 2,
-		PRE_TURN_LEFT = 3,
-		TURN_LEFT = 4,
-		POST_TURN_LEFT = 5,
-		TURN_RIGHT = 6,
+		CHECK_LEFT = 3,
+		PRE_TURN_LEFT = 4,
+		TURN_LEFT = 5,
+		POST_TURN_LEFT = 6,
+		TURN_RIGHT = 7,
 	} state;
 	enum direction_t {
 		POS_Y,
@@ -33,27 +35,31 @@ namespace WallFollower {
 	} direction;
 
 	// Wall-following parameters
-	const float DRIVE_VOLTAGE = 2.5; // for forward drive (V)
-	const float WALL_DISTANCE = 0.2; // from VTC (m)
-
-	// Wall Distance PID Controller
-	// Input: Wall distance (m)
-	// Output: Robot yawrate (rad/s)
-	const float KP = 25.0;
-	const float KI = 0.0;
-	const float KD = 10.0;
-	const float YAW_MAX = 2.0; // Max yawrate (rad/s)
-	const float RESET_TIME = 0.5; // (s)
-
-	PidController wallPid(KP, KI, KD,
-		-YAW_MAX,
-		+YAW_MAX,
-		RESET_TIME);
+	const float WALL_DISTANCE = 0.23; // from VTC (m)
+	const float WALL_TOLERANCE = 0.1; // (m)
 
 	// Timer for pre- and post-turns
-	Timer driveTimer;
 	const float PRE_TURN_TIME = 1.5; // (s)
-	const float POST_TURN_TIME = 3.0; // (s)
+	Timer driveTimer;
+
+	// Left wall distance checking
+	const float LEFT_WALL_CHECK_TIME = 0.5; // (s)
+	Timer leftWallTimer;
+
+	// Wall following PID
+	// Input: Wall distance (m)
+	// Output: Heading change (rad)
+	const float KP = 3.5;
+	const float KI = 0;
+	const float KD = 0;
+	const float MAX_HEADING_CHANGE = 0.15; // rad
+	const float RESET_TIME = 0.2;
+	PidController wallPid(KP, KI, KD,
+		-MAX_HEADING_CHANGE,
+		+MAX_HEADING_CHANGE,
+		RESET_TIME);
+	float headingOffset = 0;
+	float wallFollowHeading = 0;
 }
 
 //**************************************************************/
@@ -80,10 +86,11 @@ byte WallFollower::getState() {
 //!b Returns true if robot is near left wall.
 //!d If left sonar is invalid, assumes true.
 bool WallFollower::nearLeftWall() {
-	if(Sonar::distL == 0)
+	if(Sonar::distL == 0) {
 		return true;
-	else
-		return (Sonar::distL <= WALL_DISTANCE + 0.2);
+	} else {
+		return (Sonar::distL <= WALL_DISTANCE + WALL_TOLERANCE);
+	}
 }
 
 //!b Returns true if robot is near front wall.
@@ -106,15 +113,29 @@ void WallFollower::loop() {
 
 		// Driving forwards
 		case FORWARD:
+			// Wall following
 			if(Sonar::distL != 0) {
-				DriveSystem::driveAtYawrate(
-					DRIVE_VOLTAGE,
-					wallPid.update(
-						WALL_DISTANCE - Sonar::distL));
+				headingOffset = wallPid.update(
+					WALL_DISTANCE - Sonar::distL);
+				wallFollowHeading =
+					targetHeading() + headingOffset;
+				if(wallFollowHeading < 0) {
+					wallFollowHeading += TWO_PI;
+				} else
+				if(wallFollowHeading > TWO_PI) {
+					wallFollowHeading -= TWO_PI;
+				}
+			} else {
+				wallFollowHeading = targetHeading();
 			}
+			DriveSystem::driveAtHeading(
+				wallFollowHeading,
+				true);
+
+			// State changes
 			if(!nearLeftWall()) {
-				driveTimer.tic();
-				state = PRE_TURN_LEFT;
+				leftWallTimer.tic();
+				state = CHECK_LEFT;
 			}
 			if(nearFrontWall()) {
 				setDirectionRight();
@@ -122,11 +143,26 @@ void WallFollower::loop() {
 			}
 			break;
 
+		// Drive straight then re-check left side
+		case CHECK_LEFT:
+			DriveSystem::driveAtHeading(
+				targetHeading(),
+				true);
+			if(nearLeftWall()) {
+				state = FORWARD;
+			} else if(leftWallTimer.hasElapsed(
+				LEFT_WALL_CHECK_TIME))
+			{
+				driveTimer.tic();
+				state = PRE_TURN_LEFT;
+			}
+			break;
+
 		// Drive forwards before left turn
 		case PRE_TURN_LEFT:
 			DriveSystem::driveAtHeading(
-				DRIVE_VOLTAGE,
-				targetHeading());
+				targetHeading(),
+				true);
 			if(driveTimer.hasElapsed(PRE_TURN_TIME)) {
 				setDirectionLeft();
 				state = TURN_LEFT;
@@ -135,8 +171,10 @@ void WallFollower::loop() {
 
 		// Make a left turn
 		case TURN_LEFT:
-			if(DriveSystem::driveAtHeading(0, targetHeading())) {
-				driveTimer.tic();
+			if(DriveSystem::driveAtHeading(
+				targetHeading(),
+				false))
+			{
 				state = POST_TURN_LEFT;
 			}
 			break;
@@ -144,21 +182,19 @@ void WallFollower::loop() {
 		// Drive forwards after left turn
 		case POST_TURN_LEFT:
 			DriveSystem::driveAtHeading(
-				DRIVE_VOLTAGE,
-				targetHeading());
-			if(driveTimer.hasElapsed(POST_TURN_TIME)) {
-				if(nearLeftWall()) {
-					state = FORWARD;
-				} else {
-					setDirectionLeft();
-					state = TURN_LEFT;
-				}
+				targetHeading(),
+				true);
+			if(nearLeftWall()) {
+				state = FORWARD;
 			}
 			break;
 
 		// Make a right turn
 		case TURN_RIGHT:
-			if(DriveSystem::driveAtHeading(0, targetHeading())) {
+			if(DriveSystem::driveAtHeading(
+				targetHeading(),
+				false))
+			{
 				state = FORWARD;
 			}
 			break;

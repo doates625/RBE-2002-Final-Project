@@ -18,8 +18,9 @@
 //**************************************************************/
 
 namespace Odometer {
-	extern Vec robotPos;
-	extern float heading;
+	extern Vec position;	// m
+	extern float speed;		// m/s
+	extern float heading;	// rad
 
 	bool setup();
 	float getHeading();

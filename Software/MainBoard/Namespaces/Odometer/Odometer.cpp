@@ -7,6 +7,7 @@
 
 #include "Odometer.h"
 #include "Bno055.h"
+#include "Timer.h"
 #include "MotorL.h"
 #include "MotorR.h"
 #include "RobotDims.h"
@@ -18,9 +19,13 @@
 namespace Odometer {
 
 	// Field position
-	Vec robotPos(2); // Robot position vector (x,y) (m)
-	Vec deltaPos(2); // Small change in position (m)
-	Mat rotator(2,2); // Heading rotation matrix
+	Vec position(2);	// Robot position vector (x,y) (m)
+	Vec deltaPos(2);	// Small change in position (x,y) (m)
+	Mat rotator(2,2);	// Heading rotation matrix
+
+	// Speed variables
+	float speed = 0;
+	Timer speedTimer;
 
 	// Heading variables
 	float headingCalibration = 0;
@@ -41,6 +46,7 @@ namespace Odometer {
 bool Odometer::setup() {
 	if(imu.setup()) {
 		headingCalibration = imu.heading();
+		speedTimer.tic();
 		return true;
 	} else
 		return false;
@@ -91,5 +97,9 @@ void Odometer::loop() {
 	rotator(2,1) = -sh;
 	rotator(2,2) = ch;
 
-	robotPos = robotPos + rotator * deltaPos;
+	position = position + rotator * deltaPos;
+
+	// Compute velocity
+	speed = arc / speedTimer.toc();
+	speedTimer.tic();
 }
