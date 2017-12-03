@@ -19,6 +19,13 @@
 namespace FlameFinder {
 	void setup();
 	void loop();
+	int getBrightness();
+	bool aimedAtTarget();
 
 	extern float pan;
+	extern float tilt;
+	extern bool foundFlame;
+	extern bool extinguishedFlame;
+	extern float flamePan;
+	extern float flameTilt;
 }
