@@ -12,12 +12,20 @@
 // MAIN FUNCTION DEFINITIONS
 //*************************************************************//
 
+Timer printTimer;
+
 //!b Executes once on Arduino reset.
 void setup() {
-	FireBot::setup();
+	FlameFinder::setup();
+	Serial.begin(115200);
+	printTimer.tic();
 }
 
 //!b Executes repeatedly after Arduino reset.
 void loop() {
-	FireBot::loop();
+	FlameFinder::loop();
+	if(printTimer.hasElapsed(0.1)) {
+		Serial.println(FlameFinder::pan * 57.296);
+		printTimer.tic();
+	}
 }

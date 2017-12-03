@@ -15,6 +15,7 @@
 #include "Odometer.h"
 #include "MatlabComms.h"
 #include "Sonar.h"
+#include "FlameFinder.h"
 #include "WallFollower.h"
 
 //*************************************************************//
