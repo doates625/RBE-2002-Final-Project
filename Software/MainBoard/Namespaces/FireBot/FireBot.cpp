@@ -22,37 +22,18 @@ void FireBot::setup() {
 	// Initialize Namespaces
 	IndicatorLed::setup();
 	DriveSystem::setup();
+	Sonar::setup();
 	WallFollower::setup();
+	if(!Odometer::setup()) error(1); // IMU failure
+	if(!MatlabComms::setup()) error(2); // Hc06 failure
 
-	// Initialize Odometer
-	switch(Odometer::setup()) {
-		case 1: error(1); break; // IMU connection failure
-		default: break;
-	}
-
-	// Initialize Sonar Board
-	switch(SonarComms::setup()) {
-		case 1: error(2); break; // Sonar board timeout
-		case 2: error(3); break; // Sonar bad byte
-		default: break;
-	}
-
-	// Initialize Matlab communication over Bluetooth
-	switch(MatlabComms::setup()) {
-		case 1: error(4); break; // Hc06 AT command failure
-		default: break;
-	}
-
-	// Indicate readiness for Matlab begin
 	IndicatorLed::led.on();
+#ifdef MATLAB_ENABLED
+	// Wait for Matlab begin message
+	if(!MatlabComms::waitForBegin()) error(3);
+#endif
 
-	// Wait for begin message from Matlab
-	switch(MatlabComms::waitForBegin()) {
-		case 1: error(5); break;
-		default: break;
-	}
-
-	// Begin wall-following.
+	// Begin wall-following
 	WallFollower::begin();
 }
 
@@ -68,18 +49,16 @@ void FireBot::loop() {
 	// Update odometer position estimation
 	Odometer::loop();
 
-	// Check if sonar board has new data
-	switch(SonarComms::loop()) {
-		case 1: error(1); break; // Sonar board timeout
-		case 2: error(2); break; // Sonar bad byte
-		default: break;
-	}
+	// Update sonar distances
+	Sonar::loop();
 
+
+#ifdef MATLAB_ENABLED
 	// Check messages from Matlab
 	switch(MatlabComms::loop()) {
-		case 1: error(3); break; // No messages timeout
-		case 2: error(4); break; // Invalid message type byte
-		case 3: error(5); break; // Teleop data timeout
+		case 1: error(1); break; // No messages timeout
+		case 2: error(2); break; // Invalid message type byte
+		case 3: error(3); break; // Teleop data timeout
 		default: break;
 	}
 	if(MatlabComms::disconnected) {
@@ -87,6 +66,7 @@ void FireBot::loop() {
 		IndicatorLed::led.off();
 		while(1);
 	}
+#endif
 
 	// Run one iteration of wall-follower
 	WallFollower::loop();

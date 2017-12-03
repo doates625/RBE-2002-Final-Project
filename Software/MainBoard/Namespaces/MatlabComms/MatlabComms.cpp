@@ -9,7 +9,7 @@
 #include "Hc06.h"
 #include "BinarySerial.h"
 #include "Odometer.h"
-#include "SonarComms.h"
+#include "Sonar.h"
 #include "DriveSystem.h"
 #include "WallFollower.h"
 
@@ -47,30 +47,26 @@ namespace MatlabComms {
 
 //!b Initializes namespace and waits for Matlab connection.
 //!d Call this method in the main setup function.
-//!d Return codes:
-//!d - 0: Complete success
-//!d - 1: Hc06 connection failed
-uint8_t MatlabComms::setup() {
+//!d Returns true or false indicating Hc06 connection status.
+bool MatlabComms::setup() {
 	if(hc06.setup()) {
 		bSerial.setup();
-		return 0;
+		return true;
 	} else
-		return 1;
+		return false;
 }
 
 //!b Waits for begin message from Matlab.
-//!d Return codes:
-//!d - 0: Complete success
-//!d - 1: Received wrong connection byte
-uint8_t MatlabComms::waitForBegin() {
+//!d Returns false if Matlab sent wrong connect byte.
+bool MatlabComms::waitForBegin() {
 	bSerial.flush();
 	bSerial.wait();
 	if(bSerial.readByte() == BYTE_CONNECT) {
 		bSerial.writeByte(BYTE_CONNECT);
 		timer.tic();
-		return 0;
+		return true;
 	} else
-		return 1;
+		return false;
 }
 
 //!b Runs one iteration of Matlab communication loop.
@@ -90,13 +86,13 @@ uint8_t MatlabComms::loop() {
 				// Robot data request
 				case BYTE_GETDATA:
 					bSerial.writeByte(BYTE_GETDATA);
-					bSerial.writeFloat(Odometer::robotPos(1));
-					bSerial.writeFloat(Odometer::robotPos(2));
+					bSerial.writeFloat(Odometer::position(1));
+					bSerial.writeFloat(Odometer::position(2));
 					bSerial.writeFloat(Odometer::heading);
-					bSerial.writeFloat(SonarComms::distF);
-					bSerial.writeFloat(SonarComms::distB);
-					bSerial.writeFloat(SonarComms::distL);
-					bSerial.writeFloat(SonarComms::distR);
+					bSerial.writeFloat(Sonar::distF);
+					bSerial.writeFloat(Sonar::distB);
+					bSerial.writeFloat(Sonar::distL);
+					bSerial.writeFloat(Sonar::distR);
 					bSerial.writeByte(WallFollower::getState());
 					break;
 

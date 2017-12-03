@@ -6,7 +6,8 @@ classdef RobotUI < handle
     %       - A figure title
     %       - Button to connect to robot Bluetooth
     %       - Button to begin robot movement
-    %       - Button to shut down and disconnect from robot.
+    %       - Button to shut down and disconnect from robot
+    %       - Button to replay last robot run
     %       - Plot of robot position and heading with wall estimations
     %   The update method continuously sets the figure to the right half of
     %   the screen, leaving room for the command window on the left half.
@@ -15,8 +16,11 @@ classdef RobotUI < handle
     
     properties (Access = private)
         
-        % Matlab Figure
-        figurePosition = [809, 49, 784, 768];
+        % Figure Constants
+        figurePosition = [809, 49, 784, 768];   % On the screen
+        mapLimits = [-2.0, +1.0, -0.5, +2.5];   % Field map limits (m)
+        
+        % UI Handles
         fig;        % Figure handle
         titleText;  % Figure title
         cButton;    % Connect button
@@ -24,14 +28,14 @@ classdef RobotUI < handle
         dButton;    % Disconnect button
         rButton;    % Replay button
         fieldAxis;  % Field map plot
-        
-        % Button statuses
+
+        % Button Statuses
         cbPressed = 0;  % Connect
         bbPressed = 0;  % Begin
         dbPressed = 0;  % Disconnect
         rbPressed = 0;  % Replay
         
-        % Mapping aids
+        % Mapping Aids
         robotRadius = 0.125;    % Approximate robot radius (m)
     end
     
@@ -85,7 +89,7 @@ classdef RobotUI < handle
             % Redraws UI and resets pushbutton statuses
             obj.fig.Position = obj.figurePosition;
             axis equal
-            axis([-2 +1 -1 +1])
+            axis(obj.mapLimits)
             grid on
             title('Field Plot');
             xlabel('X Position (m)')

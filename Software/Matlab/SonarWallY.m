@@ -19,22 +19,37 @@ classdef SonarWallY < SonarWall
             obj.yMax = pos(2);
         end
         function [f] = fitsPoint(obj, point)
-            % Returns logical 1 if point ([x; y]) fits in wall boundaries.
-            f = (abs(point(1) - obj.xPos) < obj.normalLimit) && ...
-                obj.inYBounds(point(2));
-                
+            % Returns logical 1 if point could be added to wall.
+            x = point(1);
+            y = point(2);
+            f = (abs(x - obj.xPos) < obj.normalLimit) && ...
+                (y >= obj.yMin - obj.edgeLimit) && ...
+                (y <= obj.yMax + obj.edgeLimit);        
         end
         function [f] = onPositiveSide(obj, point)
             % Returns 1 if point is on +x side of wall and within y-bounds.
-            f = (point(1) > obj.xPos) && obj.inYBounds(point(2));
+            x = point(1);
+            y = point(2);
+            f = (x > obj.xPos) && ...
+                (y >= obj.yMin) && ...
+                (y <= obj.yMax);        
         end
         function [f] = onNegativeSide(obj, point)
             % Returns 1 if point is on -x side of wall and within y-bounds.
-            f = (point(1) < obj.xPos) && obj.inYBounds(point(2));
-        end
-        function addPoint(obj, point)
-            % Expands wall by adding point ([x; y]) to its hypothesis.
             x = point(1);
+            y = point(2);
+            f = (x < obj.xPos) && ...
+                (y >= obj.yMin) && ...
+                (y <= obj.yMax);
+        end
+        function addPoint(obj, point, side)
+            % Expands wall by adding point ([x; y]) to its hypothesis.
+            % Side is the side of the wall the point is on ('+x' or '-x').
+            switch side
+                case '+x', x = point(1) - obj.radius;
+                case '-x', x = point(1) + obj.radius;
+                otherwise, error('Side should be +x or -x');
+            end
             y = point(2);
             
             % Include x position in average
@@ -58,16 +73,13 @@ classdef SonarWallY < SonarWall
         function plot(obj, plotFmt)
             % Plots wall on current axis.
             % plotFmt can be '--', '-bo', 'rx', etc.
-            x = [obj.xPos obj.xPos];
-            y = [obj.yMin obj.yMax];
+            x0 = obj.xPos - obj.radius;
+            x1 = obj.xPos + obj.radius;
+            y0 = obj.yMin;
+            y1 = obj.yMax;
+            x = [x0 x1 x1 x0 x0];
+            y = [y0 y0 y1 y1 y0];
             plot(x, y, plotFmt)
-        end
-    end
-    methods (Access = private)
-        function [f] = inYBounds(obj, y)
-            % Returns true if y fits in wall y-boundaries
-            f = (y > obj.yMin - obj.edgeLimit) && ...
-                (y < obj.yMax + obj.edgeLimit);
         end
     end
 end

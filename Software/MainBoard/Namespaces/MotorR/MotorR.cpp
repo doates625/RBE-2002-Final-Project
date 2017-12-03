@@ -15,7 +15,7 @@
 namespace MotorR {
 
 	// Arduino Pin Connections
-	const uint8_t PIN_ENABLE = 5;
+	const uint8_t PIN_PWM = 5;
 	const uint8_t PIN_FORWARD = 7;
 	const uint8_t PIN_REVERSE = 6;
 	const uint8_t PIN_ENCODER_A = 19;
@@ -28,7 +28,7 @@ namespace MotorR {
 	// Motor Object
 	DcMotor motor(
 		TERMINAL_VOLTAGE,
-		PIN_ENABLE,
+		PIN_PWM,
 		PIN_FORWARD,
 		PIN_REVERSE,
 		PIN_ENCODER_A,

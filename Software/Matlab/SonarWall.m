@@ -15,6 +15,7 @@ classdef SonarWall < handle
     end
     
     properties (Access = protected, Constant)
+        radius = 0.01;      % Half of wall thickness (m).
         edgeLimit = 0.2;    % Maximum parallel edge offset of new point.
         normalLimit = 0.04; % Maximum perpendicular offset of new point.
     end
