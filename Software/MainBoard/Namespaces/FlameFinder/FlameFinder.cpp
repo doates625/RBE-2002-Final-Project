@@ -184,7 +184,7 @@ void FlameFinder::loop() {
 
 		// Scanning field for flame
 		case FF_SCAN_FIELD:
-			if(analogRead(PIN_FLAME) >=
+			if(analogRead(PIN_FLAME) <=
 				FLAME_FOUND_THRESHOLD)
 			{
 				foundFlame = true;

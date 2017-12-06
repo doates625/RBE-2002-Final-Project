@@ -20,5 +20,6 @@
 namespace DriveSystem {
 	void setup();
 	bool drive(float, float = 0);
+	void resetPids();
 	void stop();
 }

@@ -25,7 +25,7 @@ namespace DriveSystem {
 	// Input: Velocity (m/s)
 	// Output: Motor drive voltage (V)
 	const float V_KP = 0.0;
-	const float V_KI = 110.0;
+	const float V_KI = 40.0;
 	const float V_KD = 0.0;
 	PidController velPid(V_KP, V_KI, V_KD,
 		-DRIVE_VOLTS_MAX,
@@ -87,7 +87,13 @@ bool DriveSystem::drive(float ht, float vt) {
 	MotorR::motor.setVoltage(vDrive - vDiff);
 
 	// Check if robot is at heading steady state
-	return headingPid.steadyState(0.05, 0.001);
+	return headingPid.steadyState(0.07, 0.002);
+}
+
+//!b Resets PID controllers in namespace
+void DriveSystem::resetPids() {
+	headingPid.reset();
+	velPid.reset();
 }
 
 //!b Immediately stops drive motors and resets PID controllers.
