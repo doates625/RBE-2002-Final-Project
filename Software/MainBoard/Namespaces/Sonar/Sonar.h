@@ -28,5 +28,4 @@ namespace Sonar {
 
 	void setup();
 	void loop();
-	void isr();
 }

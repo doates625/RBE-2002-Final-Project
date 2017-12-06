@@ -19,7 +19,7 @@
 
 namespace MatlabComms {
 
-	// Communication parameters
+	// Communication Parameters
 	HardwareSerial*
 		PORT = &Serial;
 	const unsigned long
@@ -27,17 +27,15 @@ namespace MatlabComms {
 	const float
 		TIMEOUT = 1.0; // (s)
 
-	// Byte message definitions
+	// Byte Message Definitions
 	const byte BYTE_CONNECT = 0x01;
 	const byte BYTE_GETDATA = 0x02;
 	const byte BYTE_DISCONNECT = 0x03;
 
-	// Communication objects
+	// Communication Interface
 	BinarySerial bSerial(*PORT, BAUD);
 	Hc06 hc06(*PORT, BAUD);
 	Timer timer;
-
-	// Teleop Parameters
 	bool disconnected = false;
 }
 
@@ -45,7 +43,7 @@ namespace MatlabComms {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes namespace and waits for Matlab connection.
+//!b Initializes namespace and tests connection to Hc06.
 //!d Call this method in the main setup function.
 //!d Returns true or false indicating Hc06 connection status.
 bool MatlabComms::setup() {
@@ -75,7 +73,6 @@ bool MatlabComms::waitForBegin() {
 //!d - 0: Complete success
 //!d - 1: No message received within timeout
 //!d - 2: Invalid message type byte received
-//!d - 3: Teleop data timeout
 uint8_t MatlabComms::loop() {
 	if(bSerial.available()) {
 		while(bSerial.available()) {

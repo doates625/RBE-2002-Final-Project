@@ -17,15 +17,28 @@
 
 namespace WallFollower {
 
-	// State
+	// Arduino Pin Definitions
+	const uint8_t PIN_CLIFFSENSE_L = A10;
+	const uint8_t PIN_CLIFFSENSE_R = A11;
+
+	// Wall-following Parameters
+	const float WALL_DISTANCE 	= 0.23;	// (m)
+	const float WALL_TOLERANCE 	= 0.1;	// (m)
+	const float DRIVE_VELOCITY	= 0.1;	// (m/s)
+	const float PRE_TURN_TIME 	= 1.5; 	// (s)
+	const float CLIFF_BACK_TIME = 1.8;	// (s)
+	const float WALL_CHECK_TIME = 0.5;  // (s)
+
+	// Wall-Following State
 	enum state_t {
 		STOPPED = 1,
 		FORWARD = 2,
 		CHECK_LEFT = 3,
 		PRE_TURN_LEFT = 4,
 		TURN_LEFT = 5,
-		POST_TURN_LEFT = 6,
-		TURN_RIGHT = 7,
+		POST_TURN = 6,
+		BACK_FROM_CLIFF = 7,
+		TURN_RIGHT = 8,
 	} state;
 	enum direction_t {
 		POS_Y,
@@ -33,33 +46,22 @@ namespace WallFollower {
 		NEG_Y,
 		NEG_X,
 	} direction;
+	Timer timer;
 
-	// Wall-following parameters
-	const float WALL_DISTANCE = 0.23; // from VTC (m)
-	const float WALL_TOLERANCE = 0.1; // (m)
-
-	// Timer for pre- and post-turns
-	const float PRE_TURN_TIME = 1.5; // (s)
-	Timer driveTimer;
-
-	// Left wall distance checking
-	const float LEFT_WALL_CHECK_TIME = 0.5; // (s)
-	Timer leftWallTimer;
-
-	// Wall following PID
+	// Wall following PID Controller
 	// Input: Wall distance (m)
 	// Output: Heading change (rad)
 	const float KP = 3.5;
 	const float KI = 0;
 	const float KD = 0;
-	const float MAX_HEADING_CHANGE = 0.15; // rad
+	const float MAX_HEADING_CHANGE = 0.15;
 	const float RESET_TIME = 0.2;
 	PidController wallPid(KP, KI, KD,
 		-MAX_HEADING_CHANGE,
 		+MAX_HEADING_CHANGE,
 		RESET_TIME);
 	float headingOffset = 0;
-	float wallFollowHeading = 0;
+	float driveHeading = 0;
 }
 
 //**************************************************************/
@@ -68,13 +70,10 @@ namespace WallFollower {
 
 //!b Initializes wallfollower namespace.
 void WallFollower::setup() {
-	state = STOPPED;
-	direction = POS_Y;
-}
-
-//!b Initializes wallfollower state machine.
-void WallFollower::begin() {
+	pinMode(PIN_CLIFFSENSE_L, INPUT);
+	pinMode(PIN_CLIFFSENSE_R, INPUT);
 	state = FORWARD;
+	direction = POS_Y;
 }
 
 //!b Returns byte indicating current state.
@@ -102,6 +101,14 @@ bool WallFollower::nearFrontWall() {
 		return (Sonar::distF <= WALL_DISTANCE);
 }
 
+//!b Returns true if robot is near cliff.
+bool WallFollower::nearCliff() {
+	int floorDarkness =
+		analogRead(PIN_CLIFFSENSE_L) +
+		analogRead(PIN_CLIFFSENSE_R);
+	return floorDarkness >= 1400;
+}
+
 //!b Performs wall-following loop.
 void WallFollower::loop() {
 	switch(state) {
@@ -117,24 +124,18 @@ void WallFollower::loop() {
 			if(Sonar::distL != 0) {
 				headingOffset = wallPid.update(
 					WALL_DISTANCE - Sonar::distL);
-				wallFollowHeading =
+				driveHeading =
 					targetHeading() + headingOffset;
-				if(wallFollowHeading < 0) {
-					wallFollowHeading += TWO_PI;
-				} else
-				if(wallFollowHeading > TWO_PI) {
-					wallFollowHeading -= TWO_PI;
-				}
 			} else {
-				wallFollowHeading = targetHeading();
+				driveHeading = targetHeading();
 			}
-			DriveSystem::driveAtHeading(
-				wallFollowHeading,
-				true);
+			DriveSystem::drive(
+				driveHeading,
+				DRIVE_VELOCITY);
 
 			// State changes
 			if(!nearLeftWall()) {
-				leftWallTimer.tic();
+				timer.tic();
 				state = CHECK_LEFT;
 			}
 			if(nearFrontWall()) {
@@ -145,25 +146,23 @@ void WallFollower::loop() {
 
 		// Drive straight then re-check left side
 		case CHECK_LEFT:
-			DriveSystem::driveAtHeading(
+			DriveSystem::drive(
 				targetHeading(),
-				true);
+				DRIVE_VELOCITY);
 			if(nearLeftWall()) {
 				state = FORWARD;
-			} else if(leftWallTimer.hasElapsed(
-				LEFT_WALL_CHECK_TIME))
-			{
-				driveTimer.tic();
+			} else if(timer.hasElapsed(WALL_CHECK_TIME)) {
+				timer.tic();
 				state = PRE_TURN_LEFT;
 			}
 			break;
 
 		// Drive forwards before left turn
 		case PRE_TURN_LEFT:
-			DriveSystem::driveAtHeading(
+			DriveSystem::drive(
 				targetHeading(),
-				true);
-			if(driveTimer.hasElapsed(PRE_TURN_TIME)) {
+				DRIVE_VELOCITY);
+			if(timer.hasElapsed(PRE_TURN_TIME)) {
 				setDirectionLeft();
 				state = TURN_LEFT;
 			}
@@ -171,31 +170,40 @@ void WallFollower::loop() {
 
 		// Make a left turn
 		case TURN_LEFT:
-			if(DriveSystem::driveAtHeading(
-				targetHeading(),
-				false))
-			{
-				state = POST_TURN_LEFT;
+			if(DriveSystem::drive(targetHeading())) {
+				state = POST_TURN;
 			}
 			break;
 
-		// Drive forwards after left turn
-		case POST_TURN_LEFT:
-			DriveSystem::driveAtHeading(
+		// Drive forwards after a turn
+		case POST_TURN:
+			DriveSystem::drive(
 				targetHeading(),
-				true);
+				DRIVE_VELOCITY);
+			if(nearCliff()) {
+				timer.tic();
+				state = BACK_FROM_CLIFF;
+			}
 			if(nearLeftWall()) {
 				state = FORWARD;
 			}
 			break;
 
+		// Back away from a cliff
+		case BACK_FROM_CLIFF:
+			DriveSystem::drive(
+				targetHeading(),
+				-DRIVE_VELOCITY);
+			if(timer.hasElapsed(CLIFF_BACK_TIME)) {
+				setDirectionRight();
+				state = TURN_RIGHT;
+			}
+			break;
+
 		// Make a right turn
 		case TURN_RIGHT:
-			if(DriveSystem::driveAtHeading(
-				targetHeading(),
-				false))
-			{
-				state = FORWARD;
+			if(DriveSystem::drive(targetHeading())) {
+				state = POST_TURN;
 			}
 			break;
 	}

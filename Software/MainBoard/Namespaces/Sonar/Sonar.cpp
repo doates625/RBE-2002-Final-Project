@@ -16,19 +16,38 @@
 
 namespace Sonar {
 
-	// Sonar distance variables (from VTC)
+	// Arduino Pin Settings
+	const uint8_t PIN_TRIG_F = 42;
+	const uint8_t PIN_TRIG_B = 43;
+	const uint8_t PIN_TRIG_L = 44;
+	const uint8_t PIN_TRIG_R = 45;
+	const uint8_t PIN_ECHO_F = A12;
+	const uint8_t PIN_ECHO_B = A13;
+	const uint8_t PIN_ECHO_L = A14;
+	const uint8_t PIN_ECHO_R = A15;
+
+	// Sonar Distance Variables
 	float distF = 0;
 	float distB = 0;
 	float distL = 0;
 	float distR = 0;
 
-	// Sonar trigger and echo pins (in order: F,B,L,R)
-	uint8_t* PIN_TRIGS = new uint8_t[4]{51,  53, 50,  52};
-	uint8_t* PIN_ECHOS = new uint8_t[4]{A9, A11, A8, A10};
-
-	// Sonar array object
-	HcSr04Array sensors(4, PIN_TRIGS, PIN_ECHOS);
+	// Sonar Array Object
+	HcSr04Array sensors(4,
+		new uint8_t[4]{
+			PIN_TRIG_F,
+			PIN_TRIG_B,
+			PIN_TRIG_L,
+			PIN_TRIG_R},
+		new uint8_t[4]{
+			PIN_ECHO_F,
+			PIN_ECHO_B,
+			PIN_ECHO_L,
+			PIN_ECHO_R});
 	bool sonarBegun = false;
+
+	// Private Function Templates
+	void isr();
 }
 
 //**************************************************************/
@@ -36,6 +55,7 @@ namespace Sonar {
 //**************************************************************/
 
 //!b Initializes sonar sensors.
+//!d Call this method in the main setup function.
 void Sonar::setup() {
 	for(uint8_t i=1; i<=4; i++) {
 		attachPinChangeInterrupt(
@@ -47,17 +67,47 @@ void Sonar::setup() {
 }
 
 //!b Updates sonar distance variables.
+//!d Call this method in the main loop function.
 void Sonar::loop() {
 	if(sonarBegun) {
-		sensors.loop();
-		distF = sensors.get(1);
-		distB = sensors.get(2);
-		distL = sensors.get(3);
-		distR = sensors.get(4);
-		if(distF != 0) distF += RobotDims::sonarRadiusF;
-		if(distB != 0) distB += RobotDims::sonarRadiusB;
-		if(distL != 0) distL += RobotDims::sonarRadiusL;
-		if(distR != 0) distR += RobotDims::sonarRadiusR;
+		switch(sensors.loop()) {
+
+			// No sensors updated
+			case 0: break;
+
+			// Front sensor updated
+			case 1:
+				distF = sensors.get(1);
+				if(distF != 0) {
+					distF += RobotDims::sonarRadiusF;
+				}
+				break;
+
+			// Back sensor updated
+			case 2:
+				distB = sensors.get(2);
+				if(distB != 0) {
+					distB += RobotDims::sonarRadiusB;
+				}
+				break;
+
+			// Left sensor updated
+			case 3:
+				distL = sensors.get(3);
+				if(distL != 0) {
+					distL += RobotDims::sonarRadiusL;
+				}
+				break;
+
+			// Right sensor updated
+			case 4:
+				distR = sensors.get(4);
+				if(distR != 0) {
+					distR += RobotDims::sonarRadiusR;
+				}
+				break;
+
+		}
 	} else {
 		sensors.begin();
 		sonarBegun = true;

@@ -12,6 +12,7 @@
 //**************************************************************/
 
 namespace IndicatorLed {
+	const uint8_t PIN_LED = 13;
 	Led led(PIN_LED);
 }
 

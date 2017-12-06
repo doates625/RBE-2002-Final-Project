@@ -17,11 +17,8 @@
 //**************************************************************/
 
 namespace IndicatorLed {
-
-	// Arduino LED
-	const uint8_t PIN_LED = 13;
 	extern Led led;
 
 	void setup();
-	void flash(uint8_t = 1);
+	void flash(uint8_t);
 }

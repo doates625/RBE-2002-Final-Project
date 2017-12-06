@@ -14,11 +14,11 @@
 namespace MotorL {
 
 	// Arduino Pin Connections
-	const uint8_t PIN_PWM = 8;
-	const uint8_t PIN_FORWARD = 9;
-	const uint8_t PIN_REVERSE = 10;
-	const uint8_t PIN_ENCODER_A = 3;
-	const uint8_t PIN_ENCODER_B = 2;
+	const uint8_t PIN_PWM = 4;
+	const uint8_t PIN_FORWARD = 29;
+	const uint8_t PIN_REVERSE = 31;
+	const uint8_t PIN_ENCODER_A = 18;
+	const uint8_t PIN_ENCODER_B = 19;
 
 	// Motor Physical Properties
 	const float TERMINAL_VOLTAGE = 12.0;
@@ -34,7 +34,7 @@ namespace MotorL {
 		PIN_ENCODER_B,
 		ENCODER_CPR);
 
-	// Private function templates
+	// Private Function Templates
 	void interruptA();
 	void interruptB();
 }
@@ -43,7 +43,7 @@ namespace MotorL {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes and enables motor and encoder ISRs.
+//!b Initializes and enables motor and sets up encoder ISRs.
 //!d Call this method in the main setup function.
 void MotorL::setup() {
 	motor.setup();

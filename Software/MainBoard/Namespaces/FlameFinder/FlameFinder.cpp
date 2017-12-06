@@ -16,13 +16,18 @@
 
 namespace FlameFinder {
 
-	// Servo constants
+	// Arduino Pin Settings
+	const uint8_t PIN_PAN = 6;
+	const uint8_t PIN_TILT = 7;
+	const uint8_t PIN_FLAME = A0;
+	const uint8_t PIN_FAN = 8;
+
+	// Servo Constants
 	const int SERVO_SIGNAL_MIN = 400;		// microseconds
 	const int SERVO_SIGNAL_MAX = 2500;		// microseconds
 	const float SERVO_VELOCITY_MAX = 3.927;	// rad/s
 
 	// Pan System
-	const uint8_t PIN_PAN = 2;
 	const float PSERVO_ANGLE_MIN = +2.460914;	// rad
 	const float PSERVO_ANGLE_MAX = -2.591814;	// rad
 	const float PAN_MIN = 0.000;	// rad
@@ -45,9 +50,8 @@ namespace FlameFinder {
 	} panState;
 
 	// Tilt System
-	const uint8_t PIN_TILT = 3;
-	const float TSERVO_ANGLE_MIN = +2.111850;	// rad
-	const float TSERVO_ANGLE_MAX = -2.914700;	// rad
+	const float TSERVO_ANGLE_MIN = +2.565634;	// rad
+	const float TSERVO_ANGLE_MAX = -2.434734;	// rad
 	const float TILT_MIN = -0.349;	// rad
 	const float TILT_MAX = +0.349;	// rad
 	const float TILT_VEL = +1.700; 	// rad/s
@@ -68,14 +72,14 @@ namespace FlameFinder {
 	} tiltState;
 
 	// Flame Sensor System
-	const uint8_t PIN_FLAME = A12;
-	const int BRIGHTNESS_FLAME_THRESHOLD = 423;
-	const int BRIGHTNESS_EXTINGUISHED_THRESHOLD = 15;
+	const int FLAME_FOUND_THRESHOLD = 647;			// ADC
+	const int FLAME_EXTINGUISHED_THRESHOLD = 900;	// ADC
 	bool foundFlame = false;
 	bool extinguishedFlame = false;
-	int maxBrightness = 0;
 	float flamePan = 0;
 	float flameTilt = 0;
+	float flameDistance = 0;
+	int minRead = 0;
 
 	enum {
 		FF_SCAN_FIELD,
@@ -84,12 +88,11 @@ namespace FlameFinder {
 		FF_PREP_TILT,
 		FF_FIND_TILT,
 		FF_AIM_AT_FLAME,
-		FF_EXTINGUISH,
+		FF_EXTINGUISH_FLAME,
 		FF_IDLE,
 	} ffState;
 
 	// Flame Extinguisher Fan
-	const uint8_t PIN_FAN = 4;
 	const int FAN_SIGNAL_MIN = 1000;
 	const int FAN_SIGNAL_MAX = 2000;
 	const float FAN_SPEED = 0.1;
@@ -97,6 +100,9 @@ namespace FlameFinder {
 		PIN_FAN,
 		FAN_SIGNAL_MIN,
 		FAN_SIGNAL_MAX);
+
+	// Private Function Templates
+	bool aimedAtTarget();
 }
 
 //**************************************************************/
@@ -134,21 +140,17 @@ void FlameFinder::loop() {
 	// Pan state machine
 	pan = panServo.loop();
 	switch(panState) {
-
-		// Idle or controlled elsewhere
-		case PAN_IDLE:
+		case PAN_IDLE:	// Idle or controlled elsewhere
 			break;
 
-		// Panning right
-		case PAN_RIGHT:
+		case PAN_RIGHT:	// Panning right
 			if(panServo.atTargetAngle()) {
 				panServo.setAngle(PAN_MIN);
 				panState = PAN_LEFT;
 			}
 			break;
 
-		// Panning left
-		case PAN_LEFT:
+		case PAN_LEFT:	// Panning left
 			if(panServo.atTargetAngle()) {
 				panServo.setAngle(PAN_MAX);
 				panState = PAN_RIGHT;
@@ -159,21 +161,17 @@ void FlameFinder::loop() {
 	// Tilt state machine
 	tilt = tiltServo.loop();
 	switch(tiltState) {
-
-		// Idle or controlled elsewhere
-		case TILT_IDLE:
+		case TILT_IDLE:	// Idle or controlled elsewhere
 			break;
 
-		// Tilting up
-		case TILT_UP:
+		case TILT_UP:	// Tilting up
 			if(tiltServo.atTargetAngle()) {
 				tiltServo.setAngle(TILT_MIN);
 				tiltState = TILT_DOWN;
 			}
 			break;
 
-		// Tilting down
-		case TILT_DOWN:
+		case TILT_DOWN:	// Tilting down
 			if(tiltServo.atTargetAngle()) {
 				tiltServo.setAngle(TILT_MAX);
 				tiltState = TILT_UP;
@@ -186,7 +184,9 @@ void FlameFinder::loop() {
 
 		// Scanning field for flame
 		case FF_SCAN_FIELD:
-			if(getBrightness() >= BRIGHTNESS_FLAME_THRESHOLD) {
+			if(analogRead(PIN_FLAME) >=
+				FLAME_FOUND_THRESHOLD)
+			{
 				foundFlame = true;
 				panState = PAN_IDLE;
 				tiltState = TILT_IDLE;
@@ -200,7 +200,7 @@ void FlameFinder::loop() {
 		case FF_PREP_PAN:
 			if(aimedAtTarget()) {
 				panServo.setAngle(PAN_MAX);
-				maxBrightness = 0;
+				minRead = 1023;
 				ffState = FF_FIND_PAN;
 			}
 			break;
@@ -212,9 +212,9 @@ void FlameFinder::loop() {
 				tiltServo.setAngle(TILT_MIN);
 				ffState = FF_PREP_TILT;
 			} else {
-				int b = getBrightness();
-				if(b > maxBrightness) {
-					maxBrightness = b;
+				int r = analogRead(PIN_FLAME);
+				if(r < minRead) {
+					minRead = r;
 					flamePan = pan;
 				}
 			}
@@ -224,7 +224,7 @@ void FlameFinder::loop() {
 		case FF_PREP_TILT:
 			if(aimedAtTarget()) {
 				tiltServo.setAngle(TILT_MAX);
-				maxBrightness = 0;
+				minRead = 1023;
 				ffState = FF_FIND_TILT;
 			}
 			break;
@@ -235,9 +235,9 @@ void FlameFinder::loop() {
 				tiltServo.setAngle(flameTilt);
 				ffState = FF_AIM_AT_FLAME;
 			} else {
-				int b = getBrightness();
-				if(b > maxBrightness) {
-					maxBrightness = b;
+				int r = analogRead(PIN_FLAME);
+				if(r < minRead) {
+					minRead = r;
 					flameTilt = tilt;
 				}
 			}
@@ -246,15 +246,18 @@ void FlameFinder::loop() {
 		// Aim extinguisher at flame
 		case FF_AIM_AT_FLAME:
 			if(aimedAtTarget()) {
+				flameDistance =
+					0.000499035 * analogRead(PIN_FLAME)
+					+ 0.138621;
 				fan.setSpeed(FAN_SPEED);
-				ffState = FF_EXTINGUISH;
+				ffState = FF_EXTINGUISH_FLAME;
 			}
 			break;
 
 		// Extinguish flame
-		case FF_EXTINGUISH:
-			if(getBrightness() <
-				BRIGHTNESS_EXTINGUISHED_THRESHOLD)
+		case FF_EXTINGUISH_FLAME:
+			if(analogRead(PIN_FLAME) >
+				FLAME_EXTINGUISHED_THRESHOLD)
 			{
 				fan.setSpeed(0);
 				extinguishedFlame = true;
@@ -270,14 +273,8 @@ void FlameFinder::loop() {
 	}
 }
 
-//!b Returns brightness reading (0-1024) from flame sensor
-int FlameFinder::getBrightness() {
-	return 1023 - analogRead(PIN_FLAME);
-}
-
 //!b Returns true if pan and tilt servos are at target angles.
 bool FlameFinder::aimedAtTarget() {
-	return
-		panServo.atTargetAngle() &&
-		tiltServo.atTargetAngle();
+	return panServo.atTargetAngle() &&
+			tiltServo.atTargetAngle();
 }

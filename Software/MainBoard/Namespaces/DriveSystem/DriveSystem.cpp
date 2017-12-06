@@ -17,7 +17,6 @@
 namespace DriveSystem {
 
 	// Drive System Parameters
-	const float DRIVE_VELOCITY = 0.1;	// (m/s)
 	const float DRIVE_VOLTS_MAX = 8.0;	// (V)
 	const float TURN_VOLTS_MAX = 2.0;	// (V)
 	const float PID_RESET_TIME = 0.2;	// (s)
@@ -34,7 +33,7 @@ namespace DriveSystem {
 		PID_RESET_TIME);
 
 	// Heading PID Controller
-	// Input: Angular error (rad)
+	// Input: Angle (rad)
 	// Output: Differential drive voltage (V)
 	const float H_KP = 50.0;
 	const float H_KI = 0.1;
@@ -49,18 +48,24 @@ namespace DriveSystem {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes drive system motors.
+//!b Initializes drive motors.
 //!d Call this method in the main setup function.
 void DriveSystem::setup() {
 	MotorL::setup();
 	MotorR::setup();
 }
 
-//!b Steers robot towards target heading
-//!d Returns true if robot is stabilized at that heading.
-//!i Target heading in rad (PID-controlled)
-//!i True for go forward, false for turn in place
-bool DriveSystem::driveAtHeading(float ht, bool goFwd) {
+//!b Drives robot at given heading and velocity via PID control.
+//!i Target heading (rad)
+//!i Target velocity (m/s) (default 0)
+bool DriveSystem::drive(float ht, float vt) {
+
+	// Convert heading into 0-2pi range
+	if(ht > TWO_PI) {
+		ht = fmod(ht, TWO_PI);
+	} else if(ht < 0) {
+		ht = fmod(ht, TWO_PI) + TWO_PI;
+	}
 
 	// Compute heading PID error
 	float hError;
@@ -75,17 +80,13 @@ bool DriveSystem::driveAtHeading(float ht, bool goFwd) {
 
 	// Update PID controllers
 	float vDiff = headingPid.update(hError);
-	float vDrive = 0;
-	if(goFwd) {
-		float vError = DRIVE_VELOCITY - Odometer::speed;
-		vDrive = velPid.update(vError);
-	}
+	float vDrive = velPid.update(vt - Odometer::velocity);
 
 	// Drive motors
 	MotorL::motor.setVoltage(vDrive + vDiff);
 	MotorR::motor.setVoltage(vDrive - vDiff);
 
-	// Check if robot is at steady state
+	// Check if robot is at heading steady state
 	return headingPid.steadyState(0.05, 0.001);
 }
 
@@ -93,4 +94,6 @@ bool DriveSystem::driveAtHeading(float ht, bool goFwd) {
 void DriveSystem::stop() {
 	MotorL::motor.brake();
 	MotorR::motor.brake();
+	headingPid.reset();
+	velPid.reset();
 }

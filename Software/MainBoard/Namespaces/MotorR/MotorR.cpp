@@ -8,18 +8,17 @@
 #include "MotorR.h"
 
 //**************************************************************/
-// NAMESPACE OBJECT DEFINITIONS
+// NAMESPACE FIELD DEFINITIONS
 //**************************************************************/
 
-// Motor object
 namespace MotorR {
 
 	// Arduino Pin Connections
 	const uint8_t PIN_PWM = 5;
-	const uint8_t PIN_FORWARD = 7;
-	const uint8_t PIN_REVERSE = 6;
-	const uint8_t PIN_ENCODER_A = 19;
-	const uint8_t PIN_ENCODER_B = 18;
+	const uint8_t PIN_FORWARD = 49;
+	const uint8_t PIN_REVERSE = 47;
+	const uint8_t PIN_ENCODER_A = 2;
+	const uint8_t PIN_ENCODER_B = 3;
 
 	// Motor Physical Properties
 	const float TERMINAL_VOLTAGE = 12.0;
@@ -35,7 +34,7 @@ namespace MotorR {
 		PIN_ENCODER_B,
 		ENCODER_CPR);
 
-	// Private function templates
+	// Private Function Templates
 	void interruptA();
 	void interruptB();
 }
@@ -44,7 +43,7 @@ namespace MotorR {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes and enables motor and encoder ISRs.
+//!b Initializes and enables motor and sets up encoder ISRs.
 //!d Call this method in the main setup function.
 void MotorR::setup() {
 	motor.setup();

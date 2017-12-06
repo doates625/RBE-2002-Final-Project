@@ -18,22 +18,22 @@
 
 namespace Odometer {
 
-	// Field position
+	// Position Variables
 	Vec position(2);	// Robot position vector (x,y) (m)
 	Vec deltaPos(2);	// Small change in position (x,y) (m)
 	Mat rotator(2,2);	// Heading rotation matrix
 
-	// Speed variables
-	float speed = 0;
-	Timer speedTimer;
+	// Velocity Variables
+	float velocity = 0;
+	Timer velocityTimer;
 
-	// Heading variables
+	// Heading Variables
 	float headingCalibration = 0;
 	float heading = 0;
 	float lastHeading = 0;
 
 	// Bno055 IMU
-	Bno055 imu(trb); // UPDATE ORIENTATION
+	Bno055 imu(tlb);
 }
 
 //**************************************************************/
@@ -46,28 +46,21 @@ namespace Odometer {
 bool Odometer::setup() {
 	if(imu.setup()) {
 		headingCalibration = imu.heading();
-		speedTimer.tic();
+		velocityTimer.tic();
 		return true;
 	} else
 		return false;
 }
 
-//!b Returns IMU heading relative to starting orientation.
-float Odometer::getHeading() {
-	return imu.heading() - headingCalibration;
-}
-
-//!b Returns IMU yawrate (rad/s).
-//!d Returned rate is clockwise-positive to match with heading.
-float Odometer::getYawrate() {
-	return -imu.gZ();
-}
-
-//!b Updates robot position using IMU and encoders.
+//!b Performs one odometry iteration.
+//!d Computes:
+//!d - Position (x,y) (m)
+//!d - Heading (rad)
+//!d - Velocity (m/s)
 void Odometer::loop() {
 
 	// Get heading and change in heading
-	heading = getHeading();
+	heading = imu.heading() - headingCalibration;
 	float dH = heading - lastHeading;
 	lastHeading = heading;
 
@@ -77,8 +70,12 @@ void Odometer::loop() {
 	MotorL::motor.resetEncoder();
 	MotorR::motor.resetEncoder();
 
-	// Compute delta position vector
+	// Compute velocity
 	float arc = (dL + dR) * RobotDims::halfWheelRadius;
+	velocity = arc / velocityTimer.toc();
+	velocityTimer.tic();
+
+	// Compute delta position vector
 	if(dH == 0) {
 		deltaPos(1) = 0;
 		deltaPos(2) = arc;
@@ -88,7 +85,7 @@ void Odometer::loop() {
 		deltaPos(2) = R * sin(dH);
 	}
 
-	// Rotate and add delta position vector
+	// Rotate and add delta position vector to position
 	float ch = cos(heading);
 	float sh = sin(heading);
 
@@ -98,8 +95,4 @@ void Odometer::loop() {
 	rotator(2,2) = ch;
 
 	position = position + rotator * deltaPos;
-
-	// Compute velocity
-	speed = arc / speedTimer.toc();
-	speedTimer.tic();
 }

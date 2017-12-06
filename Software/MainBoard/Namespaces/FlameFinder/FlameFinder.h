@@ -8,7 +8,8 @@
 
 //!d This namespace controls the pan-tilt system, flame sensor,
 //!d and fan for finding and putting out the flame. The pan-tilt
-//!d system consists of 2 DS3218 servos.
+//!d system consists of 2 DS3218 servos. The fan is controlled
+//!d by a brushless motor.
 
 #pragma once
 
@@ -17,15 +18,12 @@
 //**************************************************************/
 
 namespace FlameFinder {
-	void setup();
-	void loop();
-	int getBrightness();
-	bool aimedAtTarget();
-
-	extern float pan;
-	extern float tilt;
 	extern bool foundFlame;
 	extern bool extinguishedFlame;
 	extern float flamePan;
 	extern float flameTilt;
+	extern float flameDistance;
+
+	void setup();
+	void loop();
 }
