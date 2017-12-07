@@ -18,6 +18,8 @@
 
 namespace WallFollower {
 	void setup();
+	void start();
+	void stop();
 	byte getState();
 
 	bool nearLeftWall();
@@ -28,4 +30,6 @@ namespace WallFollower {
 	float targetHeading();
 	void setDirectionLeft();
 	void setDirectionRight();
+
+	void serialTest();
 }

@@ -22,12 +22,23 @@ namespace WallFollower {
 	const uint8_t PIN_CLIFFSENSE_R = A11;
 
 	// Wall-following Parameters
-	const float WALL_DISTANCE 	= 0.23;	// (m)
-	const float WALL_TOLERANCE 	= 0.1;	// (m)
-	const float DRIVE_VELOCITY	= 0.1;	// (m/s)
-	const float PRE_TURN_TIME 	= 1.5; 	// (s)
-	const float CLIFF_BACK_TIME = 1.8;	// (s)
-	const float WALL_CHECK_TIME = 0.5;  // (s)
+	const float WALL_DISTANCE 		 = 0.23;	// (m)
+	const float LEFT_WALL_TOLERANCE  = 0.1;		// (m)
+	const float FRONT_WALL_TOLERANCE = 0.02;	// (m)
+	const float DRIVE_VELOCITY_MAX	 = 0.15;	// (m/s)
+	const float PRE_TURN_DIST		 = 0.047;	// (m)
+	const float CLIFF_BACK_DIST 	 =
+		WALL_DISTANCE - 0.0353;				// (m)
+	const float WALL_CHECK_DIST = 0.062;	// (m)
+	const float PID_RESET_TIME  = 0.2;		// (s)
+
+	// Derived Parameters
+	const float PRE_TURN_TIME 	=
+		PRE_TURN_DIST / DRIVE_VELOCITY_MAX; 	// (s)
+	const float CLIFF_BACK_TIME =
+		CLIFF_BACK_DIST / DRIVE_VELOCITY_MAX; 	// (s)
+	const float WALL_CHECK_TIME =
+		WALL_CHECK_DIST / DRIVE_VELOCITY_MAX;  	// (s)
 
 	// Wall-Following State
 	enum state_t {
@@ -48,20 +59,30 @@ namespace WallFollower {
 	} direction;
 	Timer timer;
 
-	// Wall following PID Controller
+	// Left wall-following PID Controller
 	// Input: Wall distance (m)
 	// Output: Heading change (rad)
-	const float KP = 3.5;
-	const float KI = 0;
-	const float KD = 0;
+	const float L_KP = 3.5;
+	const float L_KI = 0;
+	const float L_KD = 0;
 	const float MAX_HEADING_CHANGE = 0.15;
-	const float RESET_TIME = 0.2;
-	PidController wallPid(KP, KI, KD,
+	PidController leftWallPid(L_KP, L_KI, L_KD,
 		-MAX_HEADING_CHANGE,
 		+MAX_HEADING_CHANGE,
-		RESET_TIME);
+		PID_RESET_TIME);
 	float headingOffset = 0;
 	float driveHeading = 0;
+
+	// Front wall distance PID controller
+	// Input: Wall distance (m)
+	// Output: Forward drive velocity (m/s)
+	const float F_KP = 1.5;
+	const float F_KI = 0;
+	const float F_KD = 0;
+	PidController frontWallPid(F_KP, F_KI, F_KD,
+		0, DRIVE_VELOCITY_MAX,
+		PID_RESET_TIME);
+	float driveVelocity = DRIVE_VELOCITY_MAX;
 }
 
 //**************************************************************/
@@ -69,11 +90,24 @@ namespace WallFollower {
 //**************************************************************/
 
 //!b Initializes wallfollower namespace.
+//!d Also sets state to forward.
 void WallFollower::setup() {
 	pinMode(PIN_CLIFFSENSE_L, INPUT);
 	pinMode(PIN_CLIFFSENSE_R, INPUT);
-	state = FORWARD;
 	direction = POS_Y;
+	start();
+}
+
+//!b Initializes wall-follower to forward state.
+void WallFollower::start() {
+	driveVelocity = DRIVE_VELOCITY_MAX;
+	state = FORWARD;
+}
+
+//!b Stops drive system and sets wall-follower to stopped state.
+void WallFollower::stop() {
+	DriveSystem::stop();
+	state = STOPPED;
 }
 
 //!b Returns byte indicating current state.
@@ -88,25 +122,29 @@ bool WallFollower::nearLeftWall() {
 	if(Sonar::distL == 0) {
 		return true;
 	} else {
-		return (Sonar::distL <= WALL_DISTANCE + WALL_TOLERANCE);
+		return (Sonar::distL <=
+			WALL_DISTANCE +
+			LEFT_WALL_TOLERANCE);
 	}
 }
 
 //!b Returns true if robot is near front wall.
 //!b If front sonar is invalid, assumes false.
 bool WallFollower::nearFrontWall() {
-	if(Sonar::distF == 0)
+	if(Sonar::distF == 0) {
 		return false;
-	else
-		return (Sonar::distF <= WALL_DISTANCE);
+	} else {
+		return (Sonar::distF <=
+			WALL_DISTANCE +
+			FRONT_WALL_TOLERANCE);
+	}
 }
 
 //!b Returns true if robot is near cliff.
 bool WallFollower::nearCliff() {
-	int floorDarkness =
-		analogRead(PIN_CLIFFSENSE_L) +
-		analogRead(PIN_CLIFFSENSE_R);
-	return floorDarkness >= 1400;
+	return
+		analogRead(PIN_CLIFFSENSE_L) >= 500 ||
+		analogRead(PIN_CLIFFSENSE_R) >= 500;
 }
 
 //!b Performs wall-following loop.
@@ -115,23 +153,26 @@ void WallFollower::loop() {
 
 		// Stopped (no movement)
 		case STOPPED:
-			DriveSystem::stop();
 			break;
 
 		// Driving forwards
 		case FORWARD:
 			// Wall following
 			if(Sonar::distL != 0) {
-				headingOffset = wallPid.update(
+				headingOffset = leftWallPid.update(
 					WALL_DISTANCE - Sonar::distL);
 				driveHeading =
 					targetHeading() + headingOffset;
 			} else {
 				driveHeading = targetHeading();
 			}
+			if(Sonar::distF != 0) {
+				driveVelocity = frontWallPid.update(
+					Sonar::distF - WALL_DISTANCE);
+			}
 			DriveSystem::drive(
 				driveHeading,
-				DRIVE_VELOCITY);
+				driveVelocity);
 
 			// State changes
 			if(!nearLeftWall()) {
@@ -148,8 +189,9 @@ void WallFollower::loop() {
 		case CHECK_LEFT:
 			DriveSystem::drive(
 				targetHeading(),
-				DRIVE_VELOCITY);
+				DRIVE_VELOCITY_MAX);
 			if(nearLeftWall()) {
+				driveVelocity = DRIVE_VELOCITY_MAX;
 				state = FORWARD;
 			} else if(timer.hasElapsed(WALL_CHECK_TIME)) {
 				timer.tic();
@@ -161,7 +203,11 @@ void WallFollower::loop() {
 		case PRE_TURN_LEFT:
 			DriveSystem::drive(
 				targetHeading(),
-				DRIVE_VELOCITY);
+				DRIVE_VELOCITY_MAX);
+			if(nearFrontWall()) {
+				setDirectionRight();
+				state = TURN_RIGHT;
+			}
 			if(timer.hasElapsed(PRE_TURN_TIME)) {
 				setDirectionLeft();
 				state = TURN_LEFT;
@@ -179,13 +225,18 @@ void WallFollower::loop() {
 		case POST_TURN:
 			DriveSystem::drive(
 				targetHeading(),
-				DRIVE_VELOCITY);
+				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
 				timer.tic();
 				state = BACK_FROM_CLIFF;
 			}
 			if(nearLeftWall()) {
+				driveVelocity = DRIVE_VELOCITY_MAX;
 				state = FORWARD;
+			}
+			if(nearFrontWall()) {
+				setDirectionRight();
+				state = TURN_RIGHT;
 			}
 			break;
 
@@ -193,7 +244,7 @@ void WallFollower::loop() {
 		case BACK_FROM_CLIFF:
 			DriveSystem::drive(
 				targetHeading(),
-				-DRIVE_VELOCITY);
+				-DRIVE_VELOCITY_MAX);
 			if(timer.hasElapsed(CLIFF_BACK_TIME)) {
 				setDirectionRight();
 				state = TURN_RIGHT;
@@ -237,5 +288,26 @@ void WallFollower::setDirectionRight() {
 		case POS_X: direction = NEG_Y; break;
 		case NEG_Y: direction = NEG_X; break;
 		case NEG_X: direction = POS_Y; break;
+	}
+}
+
+//!b Runs test of cliff sensor at Serial 115200
+void WallFollower::serialTest() {
+	setup();
+	Serial.begin(115200);
+	Serial.println("Cliff Sensor Test");
+
+	Timer timer;
+	timer.tic();
+
+	while(1) {
+		if(timer.hasElapsed(0.2)) {
+			timer.tic();
+			Serial.println("L: " + String(
+				analogRead(PIN_CLIFFSENSE_L)));
+			Serial.println("R: " + String(
+				analogRead(PIN_CLIFFSENSE_R)));
+			Serial.println("Cliff Status: " + String(nearCliff()));
+		}
 	}
 }

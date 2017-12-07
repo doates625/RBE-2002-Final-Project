@@ -12,6 +12,7 @@
 //!d by a brushless motor.
 
 #pragma once
+#include "Arduino.h"
 
 //**************************************************************/
 // NAMESPACE DECLARATION
@@ -26,4 +27,6 @@ namespace FlameFinder {
 
 	void setup();
 	void loop();
+	byte getState();
+	float getFlameDistance();
 }

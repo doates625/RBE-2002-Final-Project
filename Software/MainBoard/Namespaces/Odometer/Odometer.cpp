@@ -18,6 +18,9 @@
 
 namespace Odometer {
 
+	// Parameters
+	const float HOME_DISTANCE_MAX = 0.2;	// (m)
+
 	// Position Variables
 	Vec position(2);	// Robot position vector (x,y) (m)
 	Vec deltaPos(2);	// Small change in position (x,y) (m)
@@ -95,4 +98,33 @@ void Odometer::loop() {
 	rotator(2,2) = ch;
 
 	position = position + rotator * deltaPos;
+}
+
+//!b Returns true if robot is near home (0,0) within a threshold.
+bool Odometer::nearHome() {
+	return norm(position) <= HOME_DISTANCE_MAX;
+}
+
+//!b Sets up and runs test of IMU at Serial 115200.
+void Odometer::serialTest() {
+	Serial.begin(115200);
+	Serial.println("IMU Test");
+
+	if(setup()) {
+		Serial.println("IMU Connected!");
+	} else {
+		Serial.println("IMU Failed!");
+		while(1);
+	}
+
+	Timer timer;
+	timer.tic();
+
+	while(1) {
+		loop();
+		if(timer.hasElapsed(0.2)) {
+			timer.tic();
+			Serial.println("H: " + String(heading));
+		}
+	}
 }

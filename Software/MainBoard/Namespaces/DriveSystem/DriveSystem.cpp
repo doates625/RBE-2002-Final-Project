@@ -17,8 +17,8 @@
 namespace DriveSystem {
 
 	// Drive System Parameters
-	const float DRIVE_VOLTS_MAX = 8.0;	// (V)
-	const float TURN_VOLTS_MAX = 2.0;	// (V)
+	const float DRIVE_VOLTS_MAX = 9.0;	// (V)
+	const float TURN_VOLTS_MAX = 3.0;	// (V)
 	const float PID_RESET_TIME = 0.2;	// (s)
 
 	// Velocity PID controller
@@ -35,7 +35,7 @@ namespace DriveSystem {
 	// Heading PID Controller
 	// Input: Angle (rad)
 	// Output: Differential drive voltage (V)
-	const float H_KP = 50.0;
+	const float H_KP = 40.0;
 	const float H_KI = 0.1;
 	const float H_KD = 5.0;
 	PidController headingPid(H_KP, H_KI, H_KD,

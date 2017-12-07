@@ -6,6 +6,31 @@
 //!a RBE-2002 B17 Team 10
 
 #include "FireBot.h"
+#include "IndicatorLed.h"
+#include "Odometer.h"
+#include "Sonar.h"
+#include "DriveSystem.h"
+#include "WallFollower.h"
+#include "FlameFinder.h"
+#include "MatlabComms.h"
+
+//*************************************************************//
+// NAMESPACE FIELD DEFINITIONS
+//*************************************************************//
+
+namespace FireBot {
+
+	// State Machine
+	enum {
+		STATE_FIND_FIRE = 1,
+		STATE_EXTINGUISH_FIRE = 2,
+		STATE_RETURN_HOME = 3,
+		STATE_AT_HOME = 4
+	} state;
+
+	// Constants
+	const float HOME_DISTANCE_THRESHOLD = 0.2; // (m)
+}
 
 //*************************************************************//
 // NAMESPACE FUNCTION DEFINITIONS
@@ -26,6 +51,7 @@ void FireBot::setup() {
 	if(!MatlabComms::setup()) {
 		error(2);	// Indicate Hc06 failure
 	}
+	FlameFinder::setup();
 
 	IndicatorLed::led.on();	// Indicate setup is complete
 
@@ -37,16 +63,52 @@ void FireBot::setup() {
 	}
 
 #endif
+
+	// Initialize state machine
+	state = STATE_FIND_FIRE;
 }
 
 //!b Executes repeatedly after Arduino reset.
 //!d Call this method in the main loop function.
 void FireBot::loop() {
 
+	// Namespace Updates
 	Odometer::loop();		// Update position and angle
 	Sonar::loop();			// Update robot sonar
 	FlameFinder::loop();	// Run flame-finder state machine
 	WallFollower::loop();	// Run wall-follow state machine
+
+	// State Machine
+	switch(state) {
+
+		// Wall-follow until fire detected
+		case STATE_FIND_FIRE:
+			if(false) {
+				WallFollower::stop();
+				state = STATE_EXTINGUISH_FIRE;
+			}
+			break;
+
+		// Stop and put out flame
+		case STATE_EXTINGUISH_FIRE:
+			if(FlameFinder::extinguishedFlame) {
+				WallFollower::start();
+				state = STATE_RETURN_HOME;
+			}
+			break;
+
+		// Wall-follow back to home
+		case STATE_RETURN_HOME:
+			if(Odometer::nearHome()) {
+				WallFollower::stop();
+				state = STATE_AT_HOME;
+			}
+			break;
+
+		// Do nothing (at home)
+		case STATE_AT_HOME:
+			break;
+	}
 
 #ifdef MATLAB_ENABLED
 
@@ -63,6 +125,11 @@ void FireBot::loop() {
 	}
 
 #endif
+}
+
+//!b Returns byte representing state of robot (see above).
+byte FireBot::getState() {
+	return (byte)state;
 }
 
 //!b Stops robot driving and flashes LED n times in a loop.

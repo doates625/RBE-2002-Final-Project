@@ -10,13 +10,7 @@
 //!d order to quickly and easily alter the robot upload code
 //!d for debug purposes.
 
-#include "IndicatorLed.h"
-#include "DriveSystem.h"
-#include "Odometer.h"
-#include "MatlabComms.h"
-#include "Sonar.h"
-#include "FlameFinder.h"
-#include "WallFollower.h"
+#include "Arduino.h"
 
 //*************************************************************//
 // MACRO DEFINITIONS
@@ -31,6 +25,7 @@
 namespace FireBot {
 	void setup();
 	void loop();
+	byte getState();
 	void error(uint8_t);
 }
 

@@ -12,6 +12,8 @@
 #include "Sonar.h"
 #include "DriveSystem.h"
 #include "WallFollower.h"
+#include "FlameFinder.h"
+#include "FireBot.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -83,6 +85,9 @@ uint8_t MatlabComms::loop() {
 				// Robot data request
 				case BYTE_GETDATA:
 					bSerial.writeByte(BYTE_GETDATA);
+					bSerial.writeByte(FireBot::getState());
+					bSerial.writeByte(FlameFinder::getState());
+					bSerial.writeByte(WallFollower::getState());
 					bSerial.writeFloat(Odometer::position(1));
 					bSerial.writeFloat(Odometer::position(2));
 					bSerial.writeFloat(Odometer::heading);
@@ -90,7 +95,6 @@ uint8_t MatlabComms::loop() {
 					bSerial.writeFloat(Sonar::distB);
 					bSerial.writeFloat(Sonar::distL);
 					bSerial.writeFloat(Sonar::distR);
-					bSerial.writeByte(WallFollower::getState());
 					break;
 
 				// Disconnect message

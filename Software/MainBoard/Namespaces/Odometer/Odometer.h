@@ -24,4 +24,7 @@ namespace Odometer {
 
 	bool setup();
 	void loop();
+	bool nearHome();
+
+	void serialTest();
 }

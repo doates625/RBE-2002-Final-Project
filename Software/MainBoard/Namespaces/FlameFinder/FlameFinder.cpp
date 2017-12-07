@@ -6,7 +6,7 @@
 //!a RBE-2002 B17 Team 10
 
 #include "FlameFinder.h"
-#include "Arduino.h"
+#include "Odometer.h"
 #include "OpenLoopServo.h"
 #include "BrushlessMotor.h"
 
@@ -82,14 +82,15 @@ namespace FlameFinder {
 	int minRead = 0;
 
 	enum {
-		FF_SCAN_FIELD,
-		FF_PREP_PAN,
-		FF_FIND_PAN,
-		FF_PREP_TILT,
-		FF_FIND_TILT,
-		FF_AIM_AT_FLAME,
-		FF_EXTINGUISH_FLAME,
-		FF_IDLE,
+		FF_SCAN_FIELD = 1,
+		FF_PREP_PAN = 2,
+		FF_WAIT_FOR_STOP = 3,
+		FF_FIND_PAN = 4,
+		FF_PREP_TILT = 5,
+		FF_FIND_TILT = 6,
+		FF_AIM_AT_FLAME = 7,
+		FF_EXTINGUISH_FLAME = 8,
+		FF_IDLE = 9,
 	} ffState;
 
 	// Flame Extinguisher Fan
@@ -201,6 +202,13 @@ void FlameFinder::loop() {
 			if(aimedAtTarget()) {
 				panServo.setAngle(PAN_MAX);
 				minRead = 1023;
+				ffState = FF_WAIT_FOR_STOP;
+			}
+			break;
+
+		// Wait for robot to stop moving
+		case FF_WAIT_FOR_STOP:
+			if(Odometer::velocity < 0.001) {
 				ffState = FF_FIND_PAN;
 			}
 			break;
@@ -246,9 +254,7 @@ void FlameFinder::loop() {
 		// Aim extinguisher at flame
 		case FF_AIM_AT_FLAME:
 			if(aimedAtTarget()) {
-				flameDistance =
-					0.000499035 * analogRead(PIN_FLAME)
-					+ 0.138621;
+				flameDistance = getFlameDistance();
 				fan.setSpeed(FAN_SPEED);
 				ffState = FF_EXTINGUISH_FLAME;
 			}
@@ -271,6 +277,16 @@ void FlameFinder::loop() {
 		case FF_IDLE:
 			break;
 	}
+}
+
+//!b Returns byte representing state of flame finder (see above).
+byte FlameFinder::getState() {
+	return (byte)ffState;
+}
+
+//!b Calculates distance to flame assuming direct line of sight.
+float FlameFinder::getFlameDistance() {
+	return 0.000499035 * analogRead(PIN_FLAME) + 0.138621;
 }
 
 //!b Returns true if pan and tilt servos are at target angles.

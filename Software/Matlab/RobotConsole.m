@@ -106,6 +106,7 @@ while 1
         % Teleoperated Loop
         displayTitle('Autonomous Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
+        disp(' ')
         
         % Get odometry data and update map
         [rd, s, error] = robot.getData();
@@ -127,6 +128,7 @@ while 1
         % Replay Loop
         displayTitle('Replay Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
+        disp(' ')
         
         % Get recorded robot data
         rd = robotLog(loop);
@@ -150,13 +152,18 @@ while 1
         map.update(rd, removeSlip);
     end
     
-    % Status Display
+    % Display Robot Information
+    disp('STATES')
+    disp(['Robot:         ' rd.robotState])
+    disp(['Flame Finder:  ' rd.flameFinderState])
+    disp(['Wall Follower: ' rd.wallFollowerState])
+    disp(' ')
+    disp('STATUS')
     disp(['Position: (' ...
         num2str(rd.pos(1), '%.2f') ', ' ...
         num2str(rd.pos(2), '%.2f'), ')'])
     disp(['Heading: ' num2str(rad2deg(rd.heading), '%.0f')])
     disp(['Alignment: ' rd.getAlignment()])
-    disp(['State: ' rd.state])
 
     % Update UI and plots
     cla

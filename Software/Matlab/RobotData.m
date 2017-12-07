@@ -22,14 +22,17 @@ classdef RobotData < handle
         sonarL = [0; 0];    % Sonar position left
         sonarR = [0; 0];    % Sonar position right
         
-        state = ''; % Robot state
+        robotState = '';        % Robot state
+        flameFinderState = '';  % Flame finder state
+        wallFollowerState = ''; % Wall follower state
     end
     properties (Access = private, Constant)
         radius = 0.14; % Approximate robot radius (m)
     end
     
     methods
-        function obj = RobotData(x, y, h, sF, sB, sL, sR, state)
+        function obj = RobotData(x, y, h, sF, sB, sL, sR, ...
+            robotState, flameFinderState, wallFollowerState)
             % Constructs RobotData from given robot data.
             %   x = x-position (m)
             %   y = y-position (m)
@@ -56,8 +59,10 @@ classdef RobotData < handle
             obj.sonarL = obj.pos + rh * [-sL; 0];
             obj.sonarR = obj.pos + rh * [+sR; 0];
             
-            % Robot state
-            obj.state = state;
+            % Robot states
+            obj.robotState = robotState;
+            obj.flameFinderState = flameFinderState;
+            obj.wallFollowerState = wallFollowerState;
         end
         function [aln] = getAlignment(obj)
             % Returns axis alignment of robot (+x, -y, +y, -y, or none)

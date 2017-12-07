@@ -28,4 +28,6 @@ namespace Sonar {
 
 	void setup();
 	void loop();
+
+	void serialTest();
 }
