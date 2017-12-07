@@ -175,6 +175,10 @@ void WallFollower::loop() {
 				driveVelocity);
 
 			// State changes
+			if(nearCliff()) {
+				timer.tic();
+				state = BACK_FROM_CLIFF;
+			}
 			if(!nearLeftWall()) {
 				timer.tic();
 				state = CHECK_LEFT;
@@ -190,6 +194,10 @@ void WallFollower::loop() {
 			DriveSystem::drive(
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
+			if(nearCliff()) {
+				timer.tic();
+				state = BACK_FROM_CLIFF;
+			}
 			if(nearLeftWall()) {
 				driveVelocity = DRIVE_VELOCITY_MAX;
 				state = FORWARD;
@@ -204,6 +212,10 @@ void WallFollower::loop() {
 			DriveSystem::drive(
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
+			if(nearCliff()) {
+				timer.tic();
+				state = BACK_FROM_CLIFF;
+			}
 			if(nearFrontWall()) {
 				setDirectionRight();
 				state = TURN_RIGHT;
