@@ -72,11 +72,13 @@ void FireBot::setup() {
 //!d Call this method in the main loop function.
 void FireBot::loop() {
 
-	// Namespace Updates
+	// Subsystem Updates
 	Odometer::loop();		// Update position and angle
-	Sonar::loop();			// Update robot sonar
 	FlameFinder::loop();	// Run flame-finder state machine
-	WallFollower::loop();	// Run wall-follow state machine
+	if(state != STATE_EXTINGUISH_FIRE) {
+		Sonar::loop();			// Update robot sonar
+		WallFollower::loop();	// Run wall-follow state machine
+	}
 
 	// State Machine
 	switch(state) {

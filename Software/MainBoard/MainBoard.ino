@@ -7,7 +7,6 @@
 //!a RBE-2002 B17 Team 10
 
 #include "FireBot.h"
-#include "WallFollower.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
