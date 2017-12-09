@@ -28,16 +28,16 @@ namespace RobotDims {
 
 	// Vector from robot VTC base to pan servo
 	const Vec rBP(3, new float[3]{
-		+0.0000,
-		-0.0370,
-		+0.1315
+		+0.00000,
+		-0.04221,
+		+0.12737
 	});
 
 	// Vector from pan servo to tilt servo
 	const Vec rPT(3, new float[3]{
-		+0.0130,
-		+0.0335,
-		+0.0553
+		+0.01412,
+		+0.03288,
+		+0.05541
 	});
 
 	// Vector from tilt servo to flame sensor
