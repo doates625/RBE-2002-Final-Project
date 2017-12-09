@@ -29,7 +29,7 @@ namespace FireBot {
 	} state;
 
 	// Constants
-	const float HOME_DISTANCE_THRESHOLD = 0.2; // (m)
+	const float HOME_DISTANCE_THRESHOLD = 0.1; // (m)
 }
 
 //*************************************************************//
@@ -55,14 +55,10 @@ void FireBot::setup() {
 
 	IndicatorLed::led.on();	// Indicate setup is complete
 
-#ifdef MATLAB_ENABLED
-
 	// Wait for Matlab begin message
 	if(!MatlabComms::waitForBegin()) {
 		error(3);	// Indicate Matlab sent wrong byte
 	}
-
-#endif
 
 	// Initialize state machine
 	state = STATE_FIND_FIRE;
@@ -112,8 +108,7 @@ void FireBot::loop() {
 			break;
 	}
 
-#ifdef MATLAB_ENABLED
-
+	// Check Messages from Matlab
 	switch(MatlabComms::loop()) {	// Check Matlab messages
 		case 1: error(1); break;	// No messages timeout
 		case 2: error(2); break;	// Invalid message type byte
@@ -125,8 +120,6 @@ void FireBot::loop() {
 		IndicatorLed::led.off();
 		while(1);
 	}
-
-#endif
 }
 
 //!b Returns byte representing state of robot (see above).

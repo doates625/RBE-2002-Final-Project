@@ -96,7 +96,7 @@ namespace FlameFinder {
 	// Flame Extinguisher Fan
 	const int FAN_SIGNAL_MIN = 1000;
 	const int FAN_SIGNAL_MAX = 2000;
-	const float FAN_SPEED = 0.1;
+	const float FAN_SPEED = 1.0;
 	BrushlessMotor fan(
 		PIN_FAN,
 		FAN_SIGNAL_MIN,
