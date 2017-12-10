@@ -84,7 +84,7 @@ void Odometer::loop() {
 		deltaPos(2) = arc;
 	} else {
 		float R = arc / dH;
-		deltaPos(1) = R * (cos(dH) - 1.0);
+		deltaPos(1) = R * (1.0 - cos(dH));
 		deltaPos(2) = R * sin(dH);
 	}
 
