@@ -42,9 +42,9 @@ namespace RobotDims {
 
 	// Vector from tilt servo to flame sensor
 	const Vec rTS(3, new float[3]{
-		-0.0164,
-		+0.0711,
-		+0.0071
+		-0.01482,
+		+0.10332,
+		+0.03977
 	});
 
 	// Flame Position

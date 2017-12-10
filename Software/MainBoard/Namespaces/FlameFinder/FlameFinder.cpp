@@ -31,8 +31,8 @@ namespace FlameFinder {
 	const float PSERVO_ANGLE_MIN = +2.460914;	// rad
 	const float PSERVO_ANGLE_MAX = -2.591814;	// rad
 	const float PAN_MIN = 0.000;	// rad
-	const float PAN_MAX = 1.571;	// rad
-	const float PAN_VEL = 1.571;	// rad/s
+	const float PAN_MAX = PI/2.0;	// rad
+	const float PAN_VEL = PI/4.0;	// rad/s
 
 	float pan = 0;
 	OpenLoopServo panServo(
@@ -52,9 +52,9 @@ namespace FlameFinder {
 	// Tilt System
 	const float TSERVO_ANGLE_MIN = +2.565634;	// rad
 	const float TSERVO_ANGLE_MAX = -2.434734;	// rad
-	const float TILT_MIN = -0.349;	// rad
-	const float TILT_MAX = +0.349;	// rad
-	const float TILT_VEL = +1.700; 	// rad/s
+	const float TILT_MIN = -PI/6.0;		// rad
+	const float TILT_MAX = +PI/6.0;		// rad
+	const float TILT_VEL = PI*2.0/3.0;	// rad/s
 
 	float tilt = 0;
 	OpenLoopServo tiltServo(
@@ -72,7 +72,6 @@ namespace FlameFinder {
 	} tiltState;
 
 	// Flame Sensor System
-	const int FLAME_FOUND_THRESHOLD = 647;			// ADC
 	const int FLAME_EXTINGUISHED_THRESHOLD = 900;	// ADC
 	bool foundFlame = false;
 	bool extinguishedFlame = false;
@@ -101,6 +100,8 @@ namespace FlameFinder {
 		PIN_FAN,
 		FAN_SIGNAL_MIN,
 		FAN_SIGNAL_MAX);
+	const float FLAME_OUT_TIME = 3.0;
+	Timer flameTimer;
 
 	// Private Function Templates
 	bool aimedAtTarget();
@@ -114,8 +115,8 @@ namespace FlameFinder {
 void FlameFinder::setup() {
 
 	// Initialize servos and fan
-	panServo.setup(PAN_MIN);
-	tiltServo.setup(TILT_MIN);
+	panServo.setup(0);
+	tiltServo.setup(0);
 	fan.setup();
 	fan.arm();
 	delay(5000);
@@ -185,9 +186,7 @@ void FlameFinder::loop() {
 
 		// Scanning field for flame
 		case FF_SCAN_FIELD:
-			if(analogRead(PIN_FLAME) <=
-				FLAME_FOUND_THRESHOLD)
-			{
+			if(getFlameDistance() != 0) {
 				foundFlame = true;
 				panState = PAN_IDLE;
 				tiltState = TILT_IDLE;
@@ -262,13 +261,16 @@ void FlameFinder::loop() {
 
 		// Extinguish flame
 		case FF_EXTINGUISH_FLAME:
-			if(analogRead(PIN_FLAME) >
-				FLAME_EXTINGUISHED_THRESHOLD)
+			if(analogRead(PIN_FLAME <
+				FLAME_EXTINGUISHED_THRESHOLD))
 			{
+				flameTimer.tic();
+			}
+			if(flameTimer.hasElapsed(FLAME_OUT_TIME)) {
 				fan.setSpeed(0);
 				extinguishedFlame = true;
-				panServo.setAngle(PAN_MIN);
-				tiltServo.setAngle(TILT_MIN);
+				panServo.setAngle(0);
+				tiltServo.setAngle(0);
 				ffState = FF_IDLE;
 			}
 			break;
@@ -284,13 +286,69 @@ byte FlameFinder::getState() {
 	return (byte)ffState;
 }
 
-//!b Calculates distance to flame assuming direct line of sight.
+//!b Returns distance to flame assuming direct line of sight.
+//!d Returns 0 if flame is not within valid distance range.
 float FlameFinder::getFlameDistance() {
-	return 0.000499035 * analogRead(PIN_FLAME) + 0.138621;
+	int r = analogRead(PIN_FLAME);
+	if(r < 38 || r > 647) {
+		return 0;
+	} else {
+		return 0.000499035 * r + 0.138621;
+	}
 }
 
 //!b Returns true if pan and tilt servos are at target angles.
 bool FlameFinder::aimedAtTarget() {
 	return panServo.atTargetAngle() &&
 			tiltServo.atTargetAngle();
+}
+
+//!b Prints out flame distance continuously.
+//!d Prints over Serial baud 115200.
+//!d This function does not activate the servos so they can
+//!d be turned freely.
+void FlameFinder::serialDistanceTest() {
+	pinMode(PIN_FLAME, INPUT);
+
+	Serial.begin(115200);
+	Serial.println("Flame Distance Test");
+
+	Timer timer;
+	timer.tic();
+
+	while(1) {
+		if(timer.hasElapsed(0.2)) {
+			timer.tic();
+			Serial.println(getFlameDistance());
+		}
+	}
+}
+
+//!b Runs full flame finder state machine and prints status.
+//!d Prints over Serial baud 115200.
+void FlameFinder::serialExtinguishTest() {
+	Serial.begin(115200);
+	Serial.println("Flame Finder Test");
+
+	Serial.println("Initializing Flame Finder...");
+	FlameFinder::setup();
+	Timer timer;
+	timer.tic();
+
+	while(1) {
+		FlameFinder::loop();
+		if(timer.hasElapsed(0.2)) {
+			timer.tic();
+			if(extinguishedFlame) {
+				Serial.println("Flame extinguished!");
+				Serial.println("Pan:  " + String(flamePan));
+				Serial.println("Tilt: " + String(flameTilt));
+				Serial.println("Dist: " + String(flameDistance));
+			} else if(foundFlame) {
+				Serial.println("Flame found!");
+			} else {
+				Serial.println("Searching for flame...");
+			}
+		}
+	}
 }

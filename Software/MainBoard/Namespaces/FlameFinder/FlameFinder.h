@@ -29,4 +29,7 @@ namespace FlameFinder {
 	void loop();
 	byte getState();
 	float getFlameDistance();
+
+	void serialDistanceTest();
+	void serialExtinguishTest();
 }

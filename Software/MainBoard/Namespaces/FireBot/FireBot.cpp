@@ -81,7 +81,9 @@ void FireBot::loop() {
 
 		// Wall-follow until fire detected
 		case STATE_FIND_FIRE:
-			if(false) {
+			if(FlameFinder::foundFlame &&
+				WallFollower::getState() == 2) // Going forward
+			{
 				WallFollower::stop();
 				state = STATE_EXTINGUISH_FIRE;
 			}
