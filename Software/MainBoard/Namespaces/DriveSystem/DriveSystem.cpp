@@ -60,7 +60,7 @@ void DriveSystem::setup() {
 //!i Target velocity (m/s) (default 0)
 bool DriveSystem::drive(float ht, float vt) {
 
-	// Convert heading into 0-2pi range
+	// Convert target heading into 0-2pi range
 	if(ht > TWO_PI) {
 		ht = fmod(ht, TWO_PI);
 	} else if(ht < 0) {

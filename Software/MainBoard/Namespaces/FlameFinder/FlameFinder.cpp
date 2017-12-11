@@ -53,8 +53,8 @@ namespace FlameFinder {
 	const float TSERVO_ANGLE_MIN = +2.565634;	// rad
 	const float TSERVO_ANGLE_MAX = -2.434734;	// rad
 	const float TILT_MIN = -PI/6.0;		// rad
-	const float TILT_MAX = +PI/6.0;		// rad
-	const float TILT_VEL = PI*2.0/3.0;	// rad/s
+	const float TILT_MAX = +PI/4.0;		// rad
+	const float TILT_VEL = PI*5.0/6.0;	// rad/s
 
 	float tilt = 0;
 	OpenLoopServo tiltServo(
@@ -256,13 +256,14 @@ void FlameFinder::loop() {
 				flameDistance = getFlameDistance();
 				fan.setSpeed(FAN_SPEED);
 				ffState = FF_EXTINGUISH_FLAME;
+				flameTimer.tic();
 			}
 			break;
 
 		// Extinguish flame
 		case FF_EXTINGUISH_FLAME:
-			if(analogRead(PIN_FLAME <
-				FLAME_EXTINGUISHED_THRESHOLD))
+			if(analogRead(PIN_FLAME) <
+				FLAME_EXTINGUISHED_THRESHOLD)
 			{
 				flameTimer.tic();
 			}
@@ -319,7 +320,9 @@ void FlameFinder::serialDistanceTest() {
 	while(1) {
 		if(timer.hasElapsed(0.2)) {
 			timer.tic();
-			Serial.println(getFlameDistance());
+			int r = analogRead(PIN_FLAME);
+			Serial.println("R: " + String(r));
+			Serial.println("D: " + String(getFlameDistance()));
 		}
 	}
 }
@@ -341,11 +344,12 @@ void FlameFinder::serialExtinguishTest() {
 			timer.tic();
 			if(extinguishedFlame) {
 				Serial.println("Flame extinguished!");
+				while(1);
+			} else if(foundFlame) {
+				Serial.println("Flame found!");
 				Serial.println("Pan:  " + String(flamePan));
 				Serial.println("Tilt: " + String(flameTilt));
 				Serial.println("Dist: " + String(flameDistance));
-			} else if(foundFlame) {
-				Serial.println("Flame found!");
 			} else {
 				Serial.println("Searching for flame...");
 			}

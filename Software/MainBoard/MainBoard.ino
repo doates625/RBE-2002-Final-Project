@@ -10,6 +10,7 @@
 #include "FlameFinder.h"
 #include "Odometer.h"
 #include "Timer.h"
+#include "Sonar.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
@@ -17,8 +18,9 @@
 
 //!b Executes once on Arduino reset.
 void setup() {
-	// FlameFinder::serialExtinguishTest();
 	// FireBot::setup();
+	// FlameFinder::serialDistanceTest();
+	Sonar::serialTest();
 }
 
 //!b Executes repeatedly after Arduino reset.
