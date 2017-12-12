@@ -114,23 +114,25 @@ classdef RobotComms < handle
                 case  2, robotState = 'Zeroing pan servo';
                 case  3, robotState = 'Finding flame heading';
                 case  4, robotState = 'Turning to flame heading';
-                case  5, robotState = 'Finding horizontal flame distance';
-                case  6, robotState = 'Lowering tilt servo';
-                case  7, robotState = 'Finding flame tilt';
-                case  8, robotState = 'Aiming at flame';
-                case  9, robotState = 'Extinguishing flame';
-                case 10, robotState = 'Checking if flame is out';
-                case 11, robotState = 'Turning back to wall';
-                case 12, robotState = 'Going home';
-                case 13, robotState = 'At home';
+                case  5, robotState = 'Driving to candle';
+                case  6, robotState = 'Finding horizontal flame distance';
+                case  7, robotState = 'Lowering tilt servo';
+                case  8, robotState = 'Finding flame tilt';
+                case  9, robotState = 'Aiming at flame';
+                case 10, robotState = 'Extinguishing flame';
+                case 11, robotState = 'Checking if flame is out';
+                case 12, robotState = 'Backing away from candle';
+                case 13, robotState = 'Turning back to wall';
+                case 14, robotState = 'Going home';
+                case 15, robotState = 'At home';
                 otherwise, robotState = 'INVALID STATE';
             end
             
             % Read Wall Follower State
-            obj.wallFollowing = false;
+            obj.wallFollowing = true;
             switch obj.serial.readByte()
                 case 1, wallFollowerState = 'Stopped';
-                    obj.wallFollowing = true;
+                    obj.wallFollowing = false;
                 case 2, wallFollowerState = 'Following left wall';
                 case 3, wallFollowerState = 'Checking left side';
                 case 4, wallFollowerState = 'Preparing for left turn';
@@ -151,7 +153,7 @@ classdef RobotComms < handle
             sR = obj.serial.readFloat();
             
             rd = RobotData(x, y, h, sF, sB, sL, sR, ...
-                robotState, flameFinderState, wallFollowerState);
+                robotState, wallFollowerState);
         end
         function [t] = isWallFollowing(obj)
             % Returns true if robot is currently wall-following

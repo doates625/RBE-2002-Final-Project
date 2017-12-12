@@ -26,7 +26,7 @@ namespace PanTilt {
 	// Pan System
 	const float PAN_MIN = 0.000;	// rad
 	const float PAN_MAX = PI/2.0;	// rad
-	const float PAN_VEL = PI/4.0;	// rad/s
+	const float PAN_VEL = PI/2.0;	// rad/s
 
 	float pan = 0;
 	OpenLoopServo panServo(
@@ -45,7 +45,7 @@ namespace PanTilt {
 	// Tilt System
 	const float TILT_MIN = -PI/6.0;		// rad
 	const float TILT_MAX = +PI/4.0;		// rad
-	const float TILT_VEL = PI*5.0/6.0;	// rad/s
+	const float TILT_VEL = 3.5;	// rad/s
 
 	float tilt = 0;
 	OpenLoopServo tiltServo(

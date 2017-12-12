@@ -50,7 +50,7 @@ namespace WallFollower {
 		POST_TURN = 6,
 		BACK_FROM_CLIFF = 7,
 		TURN_RIGHT = 8,
-	} state;
+	} state, pausedState;
 	enum direction_t {
 		POS_Y,
 		POS_X,
@@ -95,18 +95,22 @@ void WallFollower::setup() {
 	pinMode(PIN_CLIFFSENSE_L, INPUT);
 	pinMode(PIN_CLIFFSENSE_R, INPUT);
 	direction = POS_Y;
+	pausedState = FORWARD;
 	start();
 }
 
-//!b Initializes wall-follower to forward state.
+//!b Initializes wall-follower to state before it was stopped.
 void WallFollower::start() {
 	driveVelocity = DRIVE_VELOCITY_MAX;
-	state = FORWARD;
+	timer.resume();
+	state = pausedState;
 }
 
 //!b Stops drive system and sets wall-follower to stopped state.
 void WallFollower::stop() {
 	DriveSystem::stop();
+	pausedState = state;
+	timer.pause();
 	state = STOPPED;
 }
 
@@ -114,11 +118,6 @@ void WallFollower::stop() {
 //!d See state enumeration above for mapping details.
 byte WallFollower::getState() {
 	return (byte)state;
-}
-
-//!b Returns true if wall-follower is in forward state.
-bool WallFollower::inForwardState() {
-	return state == FORWARD;
 }
 
 //!b Returns true if robot is near left wall.
@@ -181,6 +180,7 @@ void WallFollower::loop() {
 
 			// State changes
 			if(nearCliff()) {
+				stop();
 				timer.tic();
 				state = BACK_FROM_CLIFF;
 			}
@@ -200,6 +200,7 @@ void WallFollower::loop() {
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
+				stop();
 				timer.tic();
 				state = BACK_FROM_CLIFF;
 			}
@@ -218,6 +219,7 @@ void WallFollower::loop() {
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
+				stop();
 				timer.tic();
 				state = BACK_FROM_CLIFF;
 			}
@@ -244,6 +246,7 @@ void WallFollower::loop() {
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
+				stop();
 				timer.tic();
 				state = BACK_FROM_CLIFF;
 			}
@@ -275,6 +278,14 @@ void WallFollower::loop() {
 			}
 			break;
 	}
+}
+
+//!b Returns true if wall-follower is in a timed state.
+bool WallFollower::inTimedState() {
+	return
+		state == CHECK_LEFT ||
+		state == PRE_TURN_LEFT ||
+		state == BACK_FROM_CLIFF;
 }
 
 //!b Returns target heading (rad) based on current direction.

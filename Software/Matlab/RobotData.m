@@ -31,7 +31,7 @@ classdef RobotData < handle
     
     methods
         function obj = RobotData(x, y, h, sF, sB, sL, sR, ...
-            robotState, flameFinderState, wallFollowerState)
+            robotState, wallFollowerState)
             % Constructs RobotData from given robot data.
             %   x = x-position (m)
             %   y = y-position (m)
@@ -60,7 +60,6 @@ classdef RobotData < handle
             
             % Robot states
             obj.robotState = robotState;
-            obj.flameFinderState = flameFinderState;
             obj.wallFollowerState = wallFollowerState;
         end
         function [aln] = getAlignment(obj)

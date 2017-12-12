@@ -17,6 +17,9 @@ classdef MapBuilder < handle
     methods (Access = public)
         function update(obj, rd)
             % Incorporates RobotData 'rd' into new map approximation.
+            
+            % Adds points to walls
+            alignment = rd.getAlignment();
             switch alignment
                 case {'+x', '-x'}
                     switch alignment 

@@ -26,10 +26,10 @@ namespace FireBot {
 	const uint8_t PIN_FAN = 8;
 
 	// Flame Finding Variables
-	const int FLAME_FOUND_THRESHOLD = 647;	// ADC
-	const int FLAME_OUT_THRESHOLD = 900;	// ADC
+	const int FLAME_FOUND_THRESHOLD = 700;	// ADC
+	const int FLAME_OUT_THRESHOLD = 850;	// ADC WAS 950
 	int minFlameRead = 0;
-	float sweepHeading = 0;
+	float flamePan = 0;
 	float flameHeading = 0;
 	float flameTilt = 0;
 	Vec flamePos(3);
@@ -44,6 +44,12 @@ namespace FireBot {
 	float frontDistances[NUM_FRONT_READINGS];
 	int frontReadsTaken = 0;
 
+	// Driving to Candle
+	const float CANDLE_DRIVE_DISTANCE = 0.25;	// (m)
+	const float CANDLE_DRIVE_SPEED = 0.15;		// (m/s)
+	float candleDriveTime = 0;
+	Timer candleDriveTimer;
+
 	// Flame Localization Variables
 	const float CANDLE_BASE_RADIUS = 0.07;	// (m)
 	float candleSonarDistance = 0;			// (m)
@@ -51,18 +57,20 @@ namespace FireBot {
 	// State Machine
 	enum {
 		STATE_SEARCH_FOR_FLAME = 1,
-		STATE_ZERO_PAN_SERVO = 2,
-		STATE_GET_FLAME_HEADING = 3,
-		STATE_TURN_TO_FLAME_HEADING = 4,
-		STATE_GET_FLAME_HORIZONTAL_DISTANCE = 5,
-		STATE_LOWER_TILT_SERVO = 6,
-		STATE_GET_FLAME_TILT = 7,
-		STATE_AIM_AT_FLAME = 8,
-		STATE_EXTINGUISH_FLAME = 9,
-		STATE_CHECK_FLAME = 10,
-		STATE_TURN_TO_WALL = 11,
-		STATE_GO_HOME = 12,
-		STATE_AT_HOME = 13
+		STATE_ZERO_PAN_SERVO,
+		STATE_GET_FLAME_HEADING,
+		STATE_TURN_TO_FLAME_HEADING,
+		STATE_DRIVE_TO_CANDLE,
+		STATE_GET_FLAME_HORIZONTAL_DISTANCE,
+		STATE_LOWER_TILT_SERVO,
+		STATE_GET_FLAME_TILT,
+		STATE_AIM_AT_FLAME,
+		STATE_EXTINGUISH_FLAME,
+		STATE_CHECK_FLAME,
+		STATE_BACK_FROM_CANDLE,
+		STATE_TURN_TO_WALL,
+		STATE_GO_HOME,
+		STATE_AT_HOME
 	} state;
 
 	// Other Parameters
@@ -118,8 +126,8 @@ void FireBot::loop() {
 			WallFollower::loop();
 			PanTilt::sweep();
 			Sonar::loop();
-			if(WallFollower::inForwardState() &&
-				flameDetected())
+			if(flameDetected() &&
+				!WallFollower::inTimedState())
 			{
 				PanTilt::stopTilt();
 				WallFollower::stop();
@@ -131,32 +139,54 @@ void FireBot::loop() {
 		// Sero the pan servo in prep for heading sweep
 		case STATE_ZERO_PAN_SERVO:
 			if(PanTilt::isAimed()) {
-				sweepHeading = Odometer::heading + HALF_PI;
-				flameHeading = Odometer::heading;
 				minFlameRead = 1023;
+				PanTilt::setPan(PanTilt::PAN_MAX);
 				state = STATE_GET_FLAME_HEADING;
 			}
 			break;
 
-		// Rotate robot 90 degrees to find flame heading
+		// Rotate pan servo to determine flame heading
 		case STATE_GET_FLAME_HEADING:
-			if(!DriveSystem::drive(sweepHeading)) {
+			if(!PanTilt::isAimed()) {
 				int fr = analogRead(PIN_FLAME_SENSOR);
 				if(fr < minFlameRead) {
 					minFlameRead = fr;
-					flameHeading = Odometer::heading;
+					flamePan = PanTilt::pan;
 				}
 			} else {
+				flameHeading = Odometer::heading + flamePan;
+				PanTilt::setPan(0);
 				state = STATE_TURN_TO_FLAME_HEADING;
 			}
 			break;
 
-		// Turn robot to calculated flame heading
+
+		// Zero pan and turn robot to calculated flame heading
 		case STATE_TURN_TO_FLAME_HEADING:
-			if(DriveSystem::drive(flameHeading)) {
-				state = STATE_GET_FLAME_HORIZONTAL_DISTANCE;
+			if(DriveSystem::drive(flameHeading) &&
+				PanTilt::isAimed())
+			{
+				DriveSystem::stop();
+				candleDriveTimer.tic();
+				state = STATE_DRIVE_TO_CANDLE;
 			}
 			break;
+
+		// Drive up close to candle
+		case STATE_DRIVE_TO_CANDLE: {
+			float candleDist = Sonar::pingFront();
+			if(candleDist != 0 && candleDist <
+				CANDLE_DRIVE_DISTANCE)
+			{
+				DriveSystem::stop();
+				candleDriveTime = candleDriveTimer.toc();
+				state = STATE_GET_FLAME_HORIZONTAL_DISTANCE;
+			} else {
+				DriveSystem::drive(flameHeading,
+					CANDLE_DRIVE_SPEED);
+			}
+			break;
+		}
 
 		// Compute horizontal distance to candle with sonar
 		case STATE_GET_FLAME_HORIZONTAL_DISTANCE:
@@ -223,7 +253,19 @@ void FireBot::loop() {
 				state = STATE_EXTINGUISH_FLAME;
 			} else if(flameTimer.hasElapsed(FLAME_OUT_TIME)) {
 				fan.setSpeed(0.0);
+				candleDriveTimer.tic();
+				state = STATE_BACK_FROM_CANDLE;
+			}
+			break;
+
+		// Drive back from candle to previous position
+		case STATE_BACK_FROM_CANDLE:
+			if(candleDriveTimer.hasElapsed(candleDriveTime)) {
+				DriveSystem::stop();
 				state = STATE_TURN_TO_WALL;
+			} else {
+				DriveSystem::drive(flameHeading,
+					-CANDLE_DRIVE_SPEED);
 			}
 			break;
 
@@ -256,7 +298,6 @@ void FireBot::loop() {
 	switch(MatlabComms::loop()) {
 		case 1: error(1); break;	// No messages timeout
 		case 2: error(2); break;	// Invalid message type byte
-		case 3: error(3); break;	// Teleop data timeout
 		default: break;
 	}
 	if(MatlabComms::disconnected) {	// Matlab sent DC message
@@ -285,4 +326,25 @@ void FireBot::error(uint8_t n) {
 	fan.setSpeed(0.0);
 	DriveSystem::stop();
 	IndicatorLed::flash(n);
+}
+
+//!b Prints flame sensor reading at Serial bud 115200.
+void FireBot::serialFlameReadTest() {
+	pinMode(PIN_FLAME_SENSOR, INPUT);
+
+	Serial.begin(115200);
+	Serial.println("Flame Sensor Reading Test");
+	Timer timer;
+	timer.tic();
+
+	while(1) {
+		if(timer.hasElapsed(0.2)) {
+			timer.tic();
+			Serial.println("Read: " + String(
+				analogRead(PIN_FLAME_SENSOR)));
+			if(flameDetected()) {
+				Serial.println("Flame detected!");
+			}
+		}
+	}
 }

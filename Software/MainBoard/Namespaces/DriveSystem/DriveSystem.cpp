@@ -87,7 +87,7 @@ bool DriveSystem::drive(float ht, float vt) {
 	MotorR::motor.setVoltage(vDrive - vDiff);
 
 	// Check if robot is at heading steady state
-	return headingPid.steadyState(0.07, 0.002);
+	return headingPid.steadyState(0.02, 0.002);
 }
 
 //!b Resets PID controllers in namespace

@@ -25,5 +25,7 @@ namespace FireBot {
 	bool flameExtinguished();
 
 	void error(uint8_t);
+
+	void serialFlameReadTest();
 }
 
