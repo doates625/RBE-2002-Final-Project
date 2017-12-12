@@ -260,9 +260,7 @@ void FireBot::loop() {
 		default: break;
 	}
 	if(MatlabComms::disconnected) {	// Matlab sent DC message
-		DriveSystem::stop();
-		IndicatorLed::led.off();
-		while(1);
+		error(0);
 	}
 }
 
@@ -284,6 +282,7 @@ bool FireBot::flameExtinguished() {
 
 //!b Stops robot driving and flashes LED n times in a loop.
 void FireBot::error(uint8_t n) {
+	fan.setSpeed(0.0);
 	DriveSystem::stop();
 	IndicatorLed::flash(n);
 }
