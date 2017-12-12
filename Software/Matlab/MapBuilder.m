@@ -10,44 +10,27 @@ classdef MapBuilder < handle
     %   See also: SONARWALL, SONARWALLX, SONARWALLY, ROBOTDATA
     
     properties (Access = private)
-        xWalls = SonarWallX.empty;      % All walls parallel to x-axis.
-        yWalls = SonarWallY.empty;      % All walls parallel to y-axis.
+        xWalls = SonarWallX.empty;  % All walls parallel to x-axis.
+        yWalls = SonarWallY.empty;  % All walls parallel to y-axis.
     end
     
     methods (Access = public)
         function update(obj, rd)
             % Incorporates RobotData 'rd' into new map approximation.
             
-            % Adds points to walls
+            % Add new points to walls
             alignment = rd.getAlignment();
             switch alignment
                 case {'+x', '-x'}
-                    switch alignment 
-                        case '+x'
-                            sign1 = '+';
-                            sign2 = '-';
-                        case '-x'
-                            sign1 = '-';
-                            sign2 = '+';
-                    end
-                    if rd.sFvalid, obj.addToYWalls(rd.sonarF, [sign2 'x']); end
-                    if rd.sBvalid, obj.addToYWalls(rd.sonarB, [sign1 'x']); end
-                    if rd.sLvalid, obj.addToXWalls(rd.sonarL, [sign2 'y']); end
-                    if rd.sRvalid, obj.addToXWalls(rd.sonarR, [sign1 'y']); end
-                    
+                    if rd.sFvalid, obj.addToYWalls(rd.sonarF); end
+                    if rd.sBvalid, obj.addToYWalls(rd.sonarB); end
+                    if rd.sLvalid, obj.addToXWalls(rd.sonarL); end
+                    if rd.sRvalid, obj.addToXWalls(rd.sonarR); end
                 case {'+y', '-y'}
-                    switch alignment 
-                        case '+y'
-                            sign1 = '+';
-                            sign2 = '-';
-                        case '-y'
-                            sign1 = '-';
-                            sign2 = '+';
-                    end
-                    if rd.sFvalid, obj.addToXWalls(rd.sonarF, [sign2 'y']); end
-                    if rd.sBvalid, obj.addToXWalls(rd.sonarB, [sign1 'y']); end
-                    if rd.sLvalid, obj.addToYWalls(rd.sonarL, [sign2 'x']); end
-                    if rd.sRvalid, obj.addToYWalls(rd.sonarR, [sign1 'x']); end
+                    if rd.sFvalid, obj.addToXWalls(rd.sonarF); end
+                    if rd.sBvalid, obj.addToXWalls(rd.sonarB); end
+                    if rd.sLvalid, obj.addToYWalls(rd.sonarL); end
+                    if rd.sRvalid, obj.addToYWalls(rd.sonarR); end
             end
             
             % Age x-walls and remove mistakes
@@ -76,30 +59,30 @@ classdef MapBuilder < handle
                 obj.xWalls(i).plot('-b');
             end
             for i = 1:length(obj.yWalls)
-                obj.yWalls(i).plot('-r');
+                obj.yWalls(i).plot('-g');
             end
         end
     end
     methods (Access = private)
-        function addToXWalls(obj, point, side)
+        function addToXWalls(obj, point)
             % Adds point to one of the x-walls or creates a new one if
             % point doesn't fit in any existing x-walls.
             % Side is side of the wall point is on ('+y' or '-y').
             for i = 1:length(obj.xWalls)
                 if obj.xWalls(i).fitsPoint(point)
-                    obj.xWalls(i).addPoint(point, side);
+                    obj.xWalls(i).addPoint(point);
                     return
                 end
             end
             obj.xWalls(end+1) = SonarWallX(point);
         end
-        function addToYWalls(obj, point, side)
+        function addToYWalls(obj, point)
             % Adds point to one of the y-walls or creates a new one if
             % point doesn't fit in any existing y-walls.
             % Side is side of the wall point is on ('+x' or '-x').
             for i = 1:length(obj.yWalls)
                 if obj.yWalls(i).fitsPoint(point)
-                    obj.yWalls(i).addPoint(point, side);
+                    obj.yWalls(i).addPoint(point);
                     return
                 end
             end

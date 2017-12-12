@@ -33,7 +33,8 @@ classdef SonarWall < handle
         function [m] = isMistake(obj)
             % Returns logical 1 if wall is likely a sonar mistake
             m = ((obj.points < 2) && (obj.age > 1)) || ...
-                ((obj.points < 4) && (obj.age > 5));
+                ((obj.points < 4) && (obj.age > 5)) || ...
+                ((obj.dormancy > 5) && (obj.getLength < 0.18));
         end
     end
 end

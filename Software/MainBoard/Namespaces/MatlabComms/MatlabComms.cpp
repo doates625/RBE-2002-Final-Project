@@ -93,6 +93,9 @@ uint8_t MatlabComms::loop() {
 					bSerial.writeFloat(Sonar::distB);
 					bSerial.writeFloat(Sonar::distL);
 					bSerial.writeFloat(Sonar::distR);
+					bSerial.writeFloat(FireBot::flamePos(1));
+					bSerial.writeFloat(FireBot::flamePos(2));
+					bSerial.writeFloat(FireBot::flamePos(3));
 					break;
 
 				// Disconnect message

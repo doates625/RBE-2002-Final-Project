@@ -22,16 +22,18 @@ classdef RobotData < handle
         sonarL = [0; 0];    % Sonar position left
         sonarR = [0; 0];    % Sonar position right
         
+        flamePos = [0; 0; 0];   % Flame position
         robotState = '';        % Robot state
         wallFollowerState = ''; % Wall follower state
+        flameStatus = '';       % Flame status
     end
     properties (Access = private, Constant)
         radius = 0.14; % Approximate robot radius (m)
     end
     
     methods
-        function obj = RobotData(x, y, h, sF, sB, sL, sR, ...
-            robotState, wallFollowerState)
+        function obj = RobotData(x, y, h, sF, sB, sL, sR, flamePos, ...
+            robotState, wallFollowerState, flameStatus)
             % Constructs RobotData from given robot data.
             %   x = x-position (m)
             %   y = y-position (m)
@@ -59,14 +61,16 @@ classdef RobotData < handle
             obj.sonarR = obj.pos + rh * [+sR; 0];
             
             % Robot states
+            obj.flamePos = flamePos;
             obj.robotState = robotState;
             obj.wallFollowerState = wallFollowerState;
+            obj.flameStatus = flameStatus;
         end
         function [aln] = getAlignment(obj)
             % Returns axis alignment of robot (+x, -y, +y, -y, or none)
             sh = sin(obj.heading);
             ch = cos(obj.heading);
-            axisMin = cosd(15);
+            axisMin = cosd(10);
             if sh > axisMin
                 aln = '+x';
             elseif sh < -axisMin
@@ -78,6 +82,9 @@ classdef RobotData < handle
             else
                 aln = 'none';
             end
+        end
+        function [wf] = isWallFollowing(obj)
+            wf = ~strcmp(obj.wallFollowerState, 'Stopped');
         end
         function plot(obj)
             % Plots robot data on current axes.

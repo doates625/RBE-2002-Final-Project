@@ -28,6 +28,7 @@ namespace RobotDims {
 	extern const float wheelRadius;
 	extern const float halfWheelRadius;
 
-	extern Vec flamePos;
-	void computeFlamePos();
+	extern const float dBTy;
+	extern const float dBTz;
+	extern const float dTS;
 }

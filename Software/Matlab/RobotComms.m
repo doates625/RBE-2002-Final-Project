@@ -109,7 +109,8 @@ classdef RobotComms < handle
             s = 1;
             
             % Read Robot State
-            switch obj.serial.readByte()
+            stateByte = obj.serial.readByte();
+            switch stateByte
                 case  1, robotState = 'Searching for flame';
                 case  2, robotState = 'Zeroing pan servo';
                 case  3, robotState = 'Finding flame heading';
@@ -126,6 +127,15 @@ classdef RobotComms < handle
                 case 14, robotState = 'Going home';
                 case 15, robotState = 'At home';
                 otherwise, robotState = 'INVALID STATE';
+            end
+            if stateByte == 1
+                flameStatus = 'Not Found';
+            end
+            if stateByte >= 2
+                flameStatus = 'Found';
+            end
+            if stateByte >= 12
+                flameStatus = 'Extinguished';
             end
             
             % Read Wall Follower State
@@ -151,13 +161,13 @@ classdef RobotComms < handle
             sB = obj.serial.readFloat();
             sL = obj.serial.readFloat();
             sR = obj.serial.readFloat();
+            flamePos = [...
+                obj.serial.readFloat(); ...
+                obj.serial.readFloat(); ...
+                obj.serial.readFloat()];
             
-            rd = RobotData(x, y, h, sF, sB, sL, sR, ...
-                robotState, wallFollowerState);
-        end
-        function [t] = isWallFollowing(obj)
-            % Returns true if robot is currently wall-following
-            t = obj.wallFollowing;
+            rd = RobotData(x, y, h, sF, sB, sL, sR, flamePos, ...
+                robotState, wallFollowerState, flameStatus);
         end
         function disconnect(obj)
             % Sends stop message to robot then disconnects from Bluetooth.

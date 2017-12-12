@@ -101,7 +101,7 @@ end
 % Loop
 while 1
     if ~replay
-        % Teleoperated Loop
+        % Autonomous loop
         displayTitle('Autonomous Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         disp(' ')
@@ -114,53 +114,64 @@ while 1
             break
         end
         robotLog(loop) = rd;
-
-        % Check disconnect button on UI
-        if ui.disconnectButton()
-            disp('Disconnect by user.')
-            robot.disconnect();
-            break
-        end
     else
-        % Replay Loop
+        % ReplaylLoop
         displayTitle('Replay Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         disp(' ')
         
         % Get recorded robot data
         rd = robotLog(loop);
-        
-        % Check disconnect button on UI
-        if ui.disconnectButton()
-            disp('Simulation cancelled.')
-            break
-        end
     end
 
     % Update map if robot is wall-following
-    if robot.isWallFollowing()
+    if rd.isWallFollowing()
         map.update(rd);
     end
     
     % Display Robot Information
     disp('STATES')
-    disp(['Robot:         ' rd.robotState])
-    disp(['Wall Follower: ' rd.wallFollowerState])
+    disp(['Robot: ' rd.robotState])
+    disp(['Wall:  ' rd.wallFollowerState])
     disp(' ')
-    disp('STATUS')
-    disp(['Position: (' ...
-        num2str(rd.pos(1), '%.2f') ', ' ...
-        num2str(rd.pos(2), '%.2f'), ')'])
-    disp(['Heading: ' num2str(rad2deg(rd.heading), '%.0f')])
+    
+    disp('ROBOT')
+    disp(['x: ' num2str(rd.pos(1), '%+.2f') ' [m]'])
+    disp(['y: ' num2str(rd.pos(2), '%+.2f') ' [m]'])
+    disp(['h: ' num2str(rad2deg(rd.heading), '%.0f') ' [deg]'])
     disp(['Alignment: ' rd.getAlignment()])
-
+    disp(' ')
+    
+    disp('FLAME')
+    disp(['Status: ' rd.flameStatus])
+    disp('Position: ')
+    disp(['x: ' num2str(rd.flamePos(1) * 39.3701, '%+.1f') ' [in]'])
+    disp(['y: ' num2str(rd.flamePos(2) * 39.3701, '%+.1f') ' [in]'])
+    disp(['z: ' num2str(rd.flamePos(3) * 39.3701, '%+.1f') ' [in]'])
+    disp(' ')
+    
     % Update UI and plots
     cla
     hold on
     rd.plot();
     map.plot();
+    if ~isequal(rd.flamePos, [0; 0; 0])
+        plotFlame(rd.flamePos);
+    end
     ui.update();
     hold off
+    
+    % Check disconnect button
+    if ui.disconnectButton()
+        if replay
+            disp('Simulation cancelled.')
+            break
+        else
+            disp('Disconnect by user.')
+            robot.disconnect();
+            break
+        end
+    end
     
     % Increment loop count or exit if at max
     if loop == maxLoops
@@ -191,4 +202,15 @@ function displayTitle(subtitle)
     disp('ROBOT CONSOLE')
     disp(subtitle)
     disp('-------------------------------------------------')
+end
+
+function plotFlame(pos)
+    % Plots flame given position in [x; y; z] format
+    x0 = pos(1) - 0.06;
+    x1 = pos(1) + 0.06;
+    y0 = pos(2) - 0.06;
+    y1 = pos(2) + 0.06;
+    xPlot = [x0 x1 x1 x0 x0];
+    yPlot = [y0 y0 y1 y1 y0];
+    plot(xPlot, yPlot, '-r')
 end

@@ -11,18 +11,22 @@
 //!d for debug purposes.
 
 #include "Arduino.h"
+#include "LinearAtmel.h"
 
 //*************************************************************//
 // NAMESPACE DECLARATION
 //*************************************************************//
 
 namespace FireBot {
+	extern Vec flamePos;
+
 	void setup();
 	void loop();
 	byte getState();
 
 	bool flameDetected();
 	bool flameExtinguished();
+	void computeFlamePosition();
 
 	void error(uint8_t);
 

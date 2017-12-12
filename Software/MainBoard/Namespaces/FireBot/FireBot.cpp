@@ -14,6 +14,7 @@
 #include "PanTilt.h"
 #include "MatlabComms.h"
 #include "BrushlessMotor.h"
+#include "RobotDims.h"
 
 //*************************************************************//
 // NAMESPACE FIELD DEFINITIONS
@@ -26,33 +27,31 @@ namespace FireBot {
 	const uint8_t PIN_FAN = 8;
 
 	// Flame Finding Variables
-	const int FLAME_FOUND_THRESHOLD = 700;	// ADC
-	const int FLAME_OUT_THRESHOLD = 850;	// ADC WAS 950
-	int minFlameRead = 0;
-	float flamePan = 0;
-	float flameHeading = 0;
-	float flameTilt = 0;
-	Vec flamePos(3);
-
-	// Fan Variables
-	const float FLAME_OUT_TIME = 5.0;
-	BrushlessMotor fan(PIN_FAN, 1000, 2000);
-	Timer flameTimer;
-
-	// Front Sonar Variables
-	const uint8_t NUM_FRONT_READINGS = 10;
-	float frontDistances[NUM_FRONT_READINGS];
-	int frontReadsTaken = 0;
+	const int FLAME_FOUND_THRESHOLD = 700;	// (ADC)
+	int minFlameRead = 0;	// (ADC)
+	float flamePan = 0;		// (rad)
+	float flameHeading = 0;	// (rad)
+	float flameTilt = 0;	// (rad)
+	Vec flamePos(3);		// (m)
 
 	// Driving to Candle
 	const float CANDLE_DRIVE_DISTANCE = 0.25;	// (m)
 	const float CANDLE_DRIVE_SPEED = 0.15;		// (m/s)
-	float candleDriveTime = 0;
+	const float CANDLE_BASE_RADIUS = 0.06;		// (m)
+	float candleSonarDistance = 0;				// (m)
+	float candleDriveTime = 0;					// (s)
 	Timer candleDriveTimer;
 
-	// Flame Localization Variables
-	const float CANDLE_BASE_RADIUS = 0.07;	// (m)
-	float candleSonarDistance = 0;			// (m)
+	// Front Sonar Distance
+	const uint8_t NUM_FRONT_READINGS = 10;
+	float frontDistances[NUM_FRONT_READINGS];	// (m)
+	int frontReadsTaken = 0;
+
+	// Flame Extinguishing
+	const int FLAME_OUT_THRESHOLD = 850;	// (ADC)
+	const float FLAME_OUT_TIME = 5.0;		// (s)
+	BrushlessMotor fan(PIN_FAN, 1000, 2000);
+	Timer flameTimer;
 
 	// State Machine
 	enum {
@@ -72,9 +71,6 @@ namespace FireBot {
 		STATE_GO_HOME,
 		STATE_AT_HOME
 	} state;
-
-	// Other Parameters
-	const float HOME_DISTANCE_THRESHOLD = 0.1; // (m)
 }
 
 //*************************************************************//
@@ -225,6 +221,7 @@ void FireBot::loop() {
 					flameTilt = PanTilt::tilt;
 				}
 			} else {
+				computeFlamePosition();
 				PanTilt::setTilt(flameTilt);
 				state = STATE_AIM_AT_FLAME;
 			}
@@ -319,6 +316,20 @@ bool FireBot::flameDetected() {
 //!d Assumes flame sensor is pointed directly at flame.
 bool FireBot::flameExtinguished() {
 	return analogRead(PIN_FLAME_SENSOR) > FLAME_OUT_THRESHOLD;
+}
+
+//!b Computes flame position x, y, z relative to origin.
+//!d Stores result in 3-dimensional 'flamePos' vector.
+void FireBot::computeFlamePosition() {
+	float cy = candleSonarDistance + CANDLE_BASE_RADIUS;
+	float d1 = cy + RobotDims::dBTy
+				+ (RobotDims::dTS * sin(flameTilt));
+	float d2 = RobotDims::dBTz
+				+ (RobotDims::dTS * cos(flameTilt));
+	float d3 = d1 * tan(flameTilt);
+	flamePos(1) = Odometer::position(1) + cy * sin(flameHeading);
+	flamePos(2) = Odometer::position(2) + cy * cos(flameHeading);
+	flamePos(3) = d2 + d3;
 }
 
 //!b Stops robot driving and flashes LED n times in a loop.

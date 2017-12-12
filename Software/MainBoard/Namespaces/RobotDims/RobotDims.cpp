@@ -6,8 +6,6 @@
 //!a RBE-2002 B17 Team 10
 
 #include "RobotDims.h"
-#include "Odometer.h"
-#include "FlameFinder.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -26,83 +24,8 @@ namespace RobotDims {
 	const float wheelRadius = wheelDiameter * 0.5;
 	const float halfWheelRadius = wheelRadius * 0.5;
 
-	// Vector from robot VTC base to pan servo
-	const Vec rBP(3, new float[3]{
-		+0.00000,
-		-0.04221,
-		+0.12737
-	});
-
-	// Vector from pan servo to tilt servo
-	const Vec rPT(3, new float[3]{
-		+0.01412,
-		+0.03288,
-		+0.05541
-	});
-
-	// Vector from tilt servo to flame sensor
-	const Vec rTS(3, new float[3]{
-		-0.01482,
-		+0.10332,
-		+0.03977
-	});
-
-	// Flame Position
-	Vec flamePos(3);
-}
-
-//**************************************************************/
-// NAMESPACE FUNCTION DEFINITIONS
-//**************************************************************/
-
-//!b Calculates position vector (x, y, z) of flame.
-//!d Stores vector in "flamePos". Requires flame be found.
-void RobotDims::computeFlamePos() {
-
-	// Origin to robot base
-	Vec rOB(3, new float[3]{
-		Odometer::position(1),
-		Odometer::position(2),
-		0.000
-	});
-
-	// Flame sensor to flame
-	Vec rSF(3, new float[3]{
-		0.000,
-		FlameFinder::flameDistance,
-		0.000
-	});
-
-	// Heading rotation matrix
-	float cosH = cos(Odometer::heading);
-	float sinH = sin(Odometer::heading);
-	Mat rotH(3, 3, new float[9]{
-		+cosH, +sinH, 0.000,
-		-sinH, +cosH, 0.000,
-		0.000, 0.000, 1.000
-	});
-
-	// Pan rotation matrix
-	float cosP = cos(FlameFinder::flamePan);
-	float sinP = sin(FlameFinder::flamePan);
-	Mat rotP(3, 3, new float[9]{
-		+cosP, +sinP, 0.000,
-		-sinP, +cosP, 0.000,
-		0.000, 0.000, 1.000
-	});
-
-	// Tilt rotation matrix
-	float cosT = cos(FlameFinder::flameTilt);
-	float sinT = sin(FlameFinder::flameTilt);
-	Mat rotT(3, 3, new float[9]{
-		1.000, 0.000, 0.000,
-		0.000, +cosT, +sinT,
-		0.000, -sinT, +cosT
-	});
-
-	// Flame position calculation
-	flamePos = rOB + rotH * (
-		rBP + rotP * (
-			rPT + rotT * (
-				rTS + rSF)));
+	// Dimensions Used for Flame Position Calculation
+	const float dBTy = 0.038;	// (m)
+	const float dBTz = 0.18;	// (m)
+	const float dTS = 0.05;		// (m)
 }

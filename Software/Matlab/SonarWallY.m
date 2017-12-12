@@ -26,30 +26,10 @@ classdef SonarWallY < SonarWall
                 (y >= obj.yMin - obj.edgeLimit) && ...
                 (y <= obj.yMax + obj.edgeLimit);        
         end
-        function [f] = onPositiveSide(obj, point)
-            % Returns 1 if point is on +x side of wall and within y-bounds.
-            x = point(1);
-            y = point(2);
-            f = (x > obj.xPos) && ...
-                (y >= obj.yMin) && ...
-                (y <= obj.yMax);        
-        end
-        function [f] = onNegativeSide(obj, point)
-            % Returns 1 if point is on -x side of wall and within y-bounds.
-            x = point(1);
-            y = point(2);
-            f = (x < obj.xPos) && ...
-                (y >= obj.yMin) && ...
-                (y <= obj.yMax);
-        end
-        function addPoint(obj, point, side)
+        function addPoint(obj, point)
             % Expands wall by adding point ([x; y]) to its hypothesis.
             % Side is the side of the wall the point is on ('+x' or '-x').
-            switch side
-                case '+x', x = point(1) - obj.radius;
-                case '-x', x = point(1) + obj.radius;
-                otherwise, error('Side should be +x or -x');
-            end
+            x = point(1);
             y = point(2);
             
             % Include x position in average
