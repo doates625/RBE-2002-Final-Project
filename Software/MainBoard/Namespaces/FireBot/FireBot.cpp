@@ -13,6 +13,7 @@
 #include "WallFollower.h"
 #include "PanTilt.h"
 #include "MatlabComms.h"
+#include "BrushlessMotor.h"
 
 //*************************************************************//
 // NAMESPACE FIELD DEFINITIONS
@@ -75,12 +76,11 @@ namespace FireBot {
 //!b Initializes FireBot.
 //!d Call this method in the main setup function.
 void FireBot::setup() {
+	IndicatorLed::setup();
 
 	// Initialize Namespaces
 	if(!Odometer::setup()) error(1);	// Indicate IMU failure
 	if(!MatlabComms::setup()) error(2);	// Indicate Hc06 failure
-
-	IndicatorLed::setup();
 	DriveSystem::setup();
 	Sonar::setup();
 	WallFollower::setup();
