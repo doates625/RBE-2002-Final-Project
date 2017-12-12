@@ -4,7 +4,7 @@
 %   This function handles the robot user-interface, Bluetooth,
 %   and SLAM for field mapping and position correction.
 %
-%   See also: ROBOTUI, ROBOTCOMMS, MAPBUILDER
+%   See also: ROBOTUI, ROBOTCOMMS, ROBOTDATA, MAPBUILDER
 
 %% Initialization
 % Clear workspace
@@ -17,7 +17,6 @@ ui = RobotUI();
 robot = RobotComms('Arduino', 1);
 map = MapBuilder();
 logName = 'RobotLog.mat';
-removeSlip = 0;
 
 %% First User Input
 % Options:
@@ -98,7 +97,6 @@ else
     clear('logFile')
     maxLoops = length(robotLog);
 end
-netSlip = [0; 0];
 
 % Loop
 while 1
@@ -115,7 +113,6 @@ while 1
             robot.disconnect();
             break
         end
-        rd.removeSlip(netSlip);
         robotLog(loop) = rd;
 
         % Check disconnect button on UI
@@ -132,7 +129,6 @@ while 1
         
         % Get recorded robot data
         rd = robotLog(loop);
-        rd.removeSlip(netSlip);
         
         % Check disconnect button on UI
         if ui.disconnectButton()
@@ -141,21 +137,14 @@ while 1
         end
     end
 
-    % Update map if robot is moving
-    if loop > 1
-        if isequal(rd.pos, robotLog(loop-1).pos)
-            disp('Robot Stationary!')
-        else
-            netSlip = netSlip + map.update(rd, removeSlip);
-        end
-    else
-        map.update(rd, removeSlip);
+    % Update map if robot is wall-following
+    if robot.isWallFollowing()
+        map.update(rd);
     end
     
     % Display Robot Information
     disp('STATES')
     disp(['Robot:         ' rd.robotState])
-    disp(['Flame Finder:  ' rd.flameFinderState])
     disp(['Wall Follower: ' rd.wallFollowerState])
     disp(' ')
     disp('STATUS')

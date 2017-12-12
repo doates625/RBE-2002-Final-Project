@@ -8,6 +8,7 @@
 #include "Sonar.h"
 #include "RobotDims.h"
 #include "HcSr04Array.h"
+#include "HcSr04.h"
 #include "PinChangeInt.h"
 #include "Timer.h"
 
@@ -46,6 +47,9 @@ namespace Sonar {
 			PIN_ECHO_L,
 			PIN_ECHO_R});
 	bool sonarBegun = false;
+
+	// Front Sonar Interface
+	HcSr04 frontSensor(PIN_TRIG_F, PIN_ECHO_F);
 
 	// Private Function Templates
 	void isr();
@@ -113,6 +117,15 @@ void Sonar::loop() {
 		sensors.begin();
 		sonarBegun = true;
 	}
+}
+
+//!b Pings front sonar and returns distance to VTC in meters
+float Sonar::pingFront() {
+	float dist = frontSensor.dist();
+	if(dist != 0) {
+		dist += RobotDims::sonarRadiusF;
+	}
+	return dist;
 }
 
 //!b Performs interrupt service routine for sonar.

@@ -12,7 +12,6 @@
 #include "Sonar.h"
 #include "DriveSystem.h"
 #include "WallFollower.h"
-#include "FlameFinder.h"
 #include "FireBot.h"
 
 //**************************************************************/
@@ -86,7 +85,6 @@ uint8_t MatlabComms::loop() {
 				case BYTE_GETDATA:
 					bSerial.writeByte(BYTE_GETDATA);
 					bSerial.writeByte(FireBot::getState());
-					bSerial.writeByte(FlameFinder::getState());
 					bSerial.writeByte(WallFollower::getState());
 					bSerial.writeFloat(Odometer::position(1));
 					bSerial.writeFloat(Odometer::position(2));

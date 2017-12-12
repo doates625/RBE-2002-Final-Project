@@ -20,6 +20,10 @@ namespace FireBot {
 	void setup();
 	void loop();
 	byte getState();
+
+	bool flameDetected();
+	bool flameExtinguished();
+
 	void error(uint8_t);
 }
 

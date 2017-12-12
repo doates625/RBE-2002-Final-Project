@@ -23,7 +23,6 @@ classdef RobotData < handle
         sonarR = [0; 0];    % Sonar position right
         
         robotState = '';        % Robot state
-        flameFinderState = '';  % Flame finder state
         wallFollowerState = ''; % Wall follower state
     end
     properties (Access = private, Constant)
@@ -80,14 +79,6 @@ classdef RobotData < handle
             else
                 aln = 'none';
             end
-        end
-        function removeSlip(obj, slip)
-            % Subtracts slip vector from robot and sonar position vectors.
-            obj.pos = obj.pos - slip;
-            obj.sonarF = obj.sonarF - slip;
-            obj.sonarB = obj.sonarB - slip;
-            obj.sonarL = obj.sonarL - slip;
-            obj.sonarR = obj.sonarR - slip;
         end
         function plot(obj)
             % Plots robot data on current axes.

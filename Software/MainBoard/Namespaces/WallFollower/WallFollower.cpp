@@ -116,6 +116,11 @@ byte WallFollower::getState() {
 	return (byte)state;
 }
 
+//!b Returns true if wall-follower is in forward state.
+bool WallFollower::inForwardState() {
+	return state == FORWARD;
+}
+
 //!b Returns true if robot is near left wall.
 //!d If left sonar is invalid, assumes true.
 bool WallFollower::nearLeftWall() {

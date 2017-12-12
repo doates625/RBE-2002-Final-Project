@@ -26,6 +26,10 @@ classdef RobotComms < handle
         BYTE_DISCONNECT = hex2dec('03');    % Disconnect
     end
     
+    properties (Access = private)
+        wallFollowing = false;  % True if robot is currently wall-following
+    end
+    
     methods
         function obj = RobotComms(name, channel)
             % Constructs communication system over bluetooth module.
@@ -89,15 +93,15 @@ classdef RobotComms < handle
             obj.serial.writeByte(obj.BYTE_GETDATA);
             
             % Wait for data to return
-            if obj.serial.wait(32, obj.TIMEOUT)
+            if obj.serial.wait(31, obj.TIMEOUT)
                 if obj.serial.readByte() ~= obj.BYTE_GETDATA
                     rd = 0;
-                    error = 'Odometry response incorrect';
+                    error = 'Data response incorrect';
                     return
                 end
             else
                 rd = 0;
-                error = 'Odometry response timeout';
+                error = 'Data response timeout';
                 return
             end
                
@@ -106,35 +110,35 @@ classdef RobotComms < handle
             
             % Read Robot State
             switch obj.serial.readByte()
-                case 1, robotState = 'Finding fire';
-                case 2, robotState = 'Extinguishing fire';
-                case 3, robotState = 'Returning home';
-                case 4, robotState = 'At home';
-            end
-            
-            % Read Flame Finder State
-            switch obj.serial.readByte()
-                case 1, flameFinderState = 'Scanning field';
-                case 2, flameFinderState = 'Preparing for pan sweep';
-                case 3, flameFinderState = 'Waiting for robot stop';
-                case 4, flameFinderState = 'Finding flame pan';
-                case 5, flameFinderState = 'Preparing for tilt sweep';
-                case 6, flameFinderState = 'Finding flame tilt';
-                case 7, flameFinderState = 'Aiming fan at flame';
-                case 8, flameFinderState = 'Extinguishing flame';
-                case 9, flameFinderState = 'Idle';
+                case  1, robotState = 'Searching for flame';
+                case  2, robotState = 'Zeroing pan servo';
+                case  3, robotState = 'Finding flame heading';
+                case  4, robotState = 'Turning to flame heading';
+                case  5, robotState = 'Finding horizontal flame distance';
+                case  6, robotState = 'Lowering tilt servo';
+                case  7, robotState = 'Finding flame tilt';
+                case  8, robotState = 'Aiming at flame';
+                case  9, robotState = 'Extinguishing flame';
+                case 10, robotState = 'Checking if flame is out';
+                case 11, robotState = 'Turning back to wall';
+                case 12, robotState = 'Going home';
+                case 13, robotState = 'At home';
+                otherwise, robotState = 'INVALID STATE';
             end
             
             % Read Wall Follower State
+            obj.wallFollowing = false;
             switch obj.serial.readByte()
                 case 1, wallFollowerState = 'Stopped';
-                case 2, wallFollowerState = 'Forward';
+                    obj.wallFollowing = true;
+                case 2, wallFollowerState = 'Following left wall';
                 case 3, wallFollowerState = 'Checking left side';
                 case 4, wallFollowerState = 'Preparing for left turn';
                 case 5, wallFollowerState = 'Turning left';
                 case 6, wallFollowerState = 'Post turn';
                 case 7, wallFollowerState = 'Backing from cliff';
                 case 8, wallFollowerState = 'Turning right';
+                otherwise, wallFollowerState = 'INVALID STATE';
             end
             
             % Read Mathematical Information
@@ -148,6 +152,10 @@ classdef RobotComms < handle
             
             rd = RobotData(x, y, h, sF, sB, sL, sR, ...
                 robotState, flameFinderState, wallFollowerState);
+        end
+        function [t] = isWallFollowing(obj)
+            % Returns true if robot is currently wall-following
+            t = obj.wallFollowing;
         end
         function disconnect(obj)
             % Sends stop message to robot then disconnects from Bluetooth.

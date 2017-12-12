@@ -28,6 +28,7 @@ namespace Sonar {
 
 	void setup();
 	void loop();
+	float pingFront();
 
 	void serialTest();
 }

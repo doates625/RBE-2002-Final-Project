@@ -2,8 +2,8 @@
 // TITLE
 //**************************************************************/
 
-//!t FlameFinder.h
-//!b Namespace for final project flame finding system.
+//!t PanTilt.h
+//!b Namespace for final project pan-tilt servo system.
 //!a RBE-2002 B17 Team 10
 
 //!d This namespace controls the pan-tilt system, flame sensor,
@@ -18,18 +18,22 @@
 // NAMESPACE DECLARATION
 //**************************************************************/
 
-namespace FlameFinder {
-	extern bool foundFlame;
-	extern bool extinguishedFlame;
-	extern float flamePan;
-	extern float flameTilt;
-	extern float flameDistance;
+namespace PanTilt {
+	extern const float PAN_MIN;
+	extern const float PAN_MAX;
+	extern const float TILT_MIN;
+	extern const float TILT_MAX;
+
+	extern float pan;
+	extern float tilt;
 
 	void setup();
 	void loop();
-	byte getState();
-	float getFlameDistance();
+	void sweep();
 
-	void serialDistanceTest();
-	void serialExtinguishTest();
+	void setPan(float);
+	void setTilt(float);
+	void stopTilt();
+
+	bool isAimed();
 }
