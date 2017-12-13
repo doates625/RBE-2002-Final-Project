@@ -19,7 +19,7 @@
 namespace Odometer {
 
 	// Home Distance Tolerance (m)
-	const float HOME_DISTANCE_MAX = 0.15;
+	const float HOME_DISTANCE_MAX = 0.3;
 
 	// Position Variables
 	Vec position(2);	// Robot position vector (x,y) (m)

@@ -65,7 +65,7 @@ namespace WallFollower {
 	const float L_KP = 3.5;
 	const float L_KI = 0;
 	const float L_KD = 0;
-	const float MAX_HEADING_CHANGE = 0.15;
+	const float MAX_HEADING_CHANGE = 0.2;
 	PidController leftWallPid(L_KP, L_KI, L_KD,
 		-MAX_HEADING_CHANGE,
 		+MAX_HEADING_CHANGE,
