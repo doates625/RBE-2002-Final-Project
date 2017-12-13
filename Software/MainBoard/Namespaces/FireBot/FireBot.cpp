@@ -42,11 +42,6 @@ namespace FireBot {
 	float candleDriveTime = 0;					// (s)
 	Timer candleDriveTimer;
 
-	// Front Sonar Distance
-	const uint8_t NUM_FRONT_READINGS = 50;
-	float frontDistances[NUM_FRONT_READINGS];	// (m)
-	int frontReadsTaken = 0;
-
 	// Flame Extinguishing
 	const int FLAME_OUT_THRESHOLD = 850;	// (ADC)
 	const float FLAME_OUT_TIME = 5.0;		// (s)

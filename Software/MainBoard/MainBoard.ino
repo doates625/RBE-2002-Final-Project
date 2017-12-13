@@ -7,6 +7,7 @@
 //!a RBE-2002 B17 Team 10
 
 #include "FireBot.h"
+#include "Sonar.h"
 
 //*************************************************************//
 // MAIN FUNCTION DEFINITIONS
