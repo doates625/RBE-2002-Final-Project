@@ -27,7 +27,7 @@ namespace FireBot {
 	const uint8_t PIN_FAN = 8;
 
 	// Flame Finding Variables
-	const int FLAME_FOUND_THRESHOLD = 700;	// (ADC)
+	const int FLAME_FOUND_THRESHOLD = 750;	// (ADC)
 	int minFlameRead = 0;	// (ADC)
 	float flamePan = 0;		// (rad)
 	float flameHeading = 0;	// (rad)
@@ -38,12 +38,12 @@ namespace FireBot {
 	const float CANDLE_DRIVE_DISTANCE = 0.25;	// (m)
 	const float CANDLE_DRIVE_SPEED = 0.15;		// (m/s)
 	const float CANDLE_BASE_RADIUS = 0.06;		// (m)
-	float candleSonarDistance = 0;				// (m)
+	// float candleSonarDistance = 0;				// (m)
 	float candleDriveTime = 0;					// (s)
 	Timer candleDriveTimer;
 
 	// Front Sonar Distance
-	const uint8_t NUM_FRONT_READINGS = 10;
+	const uint8_t NUM_FRONT_READINGS = 50;
 	float frontDistances[NUM_FRONT_READINGS];	// (m)
 	int frontReadsTaken = 0;
 
@@ -60,7 +60,6 @@ namespace FireBot {
 		STATE_GET_FLAME_HEADING,
 		STATE_TURN_TO_FLAME_HEADING,
 		STATE_DRIVE_TO_CANDLE,
-		STATE_GET_FLAME_HORIZONTAL_DISTANCE,
 		STATE_LOWER_TILT_SERVO,
 		STATE_GET_FLAME_TILT,
 		STATE_AIM_AT_FLAME,
@@ -123,7 +122,7 @@ void FireBot::loop() {
 			PanTilt::sweep();
 			Sonar::loop();
 			if(flameDetected() &&
-				!WallFollower::inTimedState())
+				WallFollower::inPausableState())
 			{
 				PanTilt::stopTilt();
 				WallFollower::stop();
@@ -156,7 +155,6 @@ void FireBot::loop() {
 			}
 			break;
 
-
 		// Zero pan and turn robot to calculated flame heading
 		case STATE_TURN_TO_FLAME_HEADING:
 			if(DriveSystem::drive(flameHeading) &&
@@ -176,31 +174,13 @@ void FireBot::loop() {
 			{
 				DriveSystem::stop();
 				candleDriveTime = candleDriveTimer.toc();
-				state = STATE_GET_FLAME_HORIZONTAL_DISTANCE;
+				state = STATE_LOWER_TILT_SERVO;
 			} else {
 				DriveSystem::drive(flameHeading,
 					CANDLE_DRIVE_SPEED);
 			}
 			break;
 		}
-
-		// Compute horizontal distance to candle with sonar
-		case STATE_GET_FLAME_HORIZONTAL_DISTANCE:
-			if(frontReadsTaken != NUM_FRONT_READINGS) {
-				float dist = Sonar::pingFront();
-				if(dist != 0) {
-					frontDistances[frontReadsTaken] = dist;
-					frontReadsTaken++;
-				}
-			} else {
-				for(int i=0; i<NUM_FRONT_READINGS; i++) {
-					candleSonarDistance += frontDistances[i];
-				}
-				candleSonarDistance /= NUM_FRONT_READINGS;
-				PanTilt::setTilt(PanTilt::TILT_MIN);
-				state = STATE_LOWER_TILT_SERVO;
-			}
-			break;
 
 		// Lower tilt servo in prep for tilt sweep
 		case STATE_LOWER_TILT_SERVO:
@@ -321,7 +301,7 @@ bool FireBot::flameExtinguished() {
 //!b Computes flame position x, y, z relative to origin.
 //!d Stores result in 3-dimensional 'flamePos' vector.
 void FireBot::computeFlamePosition() {
-	float cy = candleSonarDistance + CANDLE_BASE_RADIUS;
+	float cy = CANDLE_DRIVE_DISTANCE + CANDLE_BASE_RADIUS;
 	float d1 = cy + RobotDims::dBTy
 				+ (RobotDims::dTS * sin(flameTilt));
 	float d2 = RobotDims::dBTz

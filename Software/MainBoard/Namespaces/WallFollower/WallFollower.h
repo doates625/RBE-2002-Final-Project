@@ -27,7 +27,7 @@ namespace WallFollower {
 	bool nearCliff();
 	void loop();
 
-	bool inTimedState();
+	bool inPausableState();
 
 	float targetHeading();
 	void setDirectionLeft();

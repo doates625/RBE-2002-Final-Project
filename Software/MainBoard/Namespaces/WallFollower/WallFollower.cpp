@@ -280,12 +280,11 @@ void WallFollower::loop() {
 	}
 }
 
-//!b Returns true if wall-follower is in a timed state.
-bool WallFollower::inTimedState() {
+//!b Returns true if wall follower can be paused without issues.
+bool WallFollower::inPausableState() {
 	return
-		state == CHECK_LEFT ||
-		state == PRE_TURN_LEFT ||
-		state == BACK_FROM_CLIFF;
+		state == FORWARD ||
+		state == POST_TURN;
 }
 
 //!b Returns target heading (rad) based on current direction.

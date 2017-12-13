@@ -116,16 +116,15 @@ classdef RobotComms < handle
                 case  3, robotState = 'Finding flame heading';
                 case  4, robotState = 'Turning to flame heading';
                 case  5, robotState = 'Driving to candle';
-                case  6, robotState = 'Finding horizontal flame distance';
-                case  7, robotState = 'Lowering tilt servo';
-                case  8, robotState = 'Finding flame tilt';
-                case  9, robotState = 'Aiming at flame';
-                case 10, robotState = 'Extinguishing flame';
-                case 11, robotState = 'Checking if flame is out';
-                case 12, robotState = 'Backing away from candle';
-                case 13, robotState = 'Turning back to wall';
-                case 14, robotState = 'Going home';
-                case 15, robotState = 'At home';
+                case  6, robotState = 'Lowering tilt servo';
+                case  7, robotState = 'Finding flame tilt';
+                case  8, robotState = 'Aiming at flame';
+                case  9, robotState = 'Extinguishing flame';
+                case 10, robotState = 'Checking if flame is out';
+                case 11, robotState = 'Backing away from candle';
+                case 12, robotState = 'Turning back to wall';
+                case 13, robotState = 'Going home';
+                case 14, robotState = 'At home';
                 otherwise, robotState = 'INVALID STATE';
             end
             if stateByte == 1
