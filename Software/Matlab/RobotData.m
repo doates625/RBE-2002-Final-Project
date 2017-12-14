@@ -28,7 +28,8 @@ classdef RobotData < handle
         flameStatus = '';       % Flame status
     end
     properties (Access = private, Constant)
-        radius = 0.14; % Approximate robot radius (m)
+        RADIUS = 0.14;      % Approximate robot radius (m)
+        SONAR_MAX = 0.75;   % Max valid sonar distance (m)
     end
     
     methods
@@ -46,10 +47,10 @@ classdef RobotData < handle
             obj.heading = h;
             
             % Sonar distances are invalid if zero
-            obj.sFvalid = (sF ~= 0);
-            obj.sBvalid = (sB ~= 0);
-            obj.sLvalid = (sL ~= 0);
-            obj.sRvalid = (sR ~= 0);
+            obj.sFvalid = (sF ~= 0) && (sF <= obj.SONAR_MAX);
+            obj.sBvalid = (sB ~= 0) && (sB <= obj.SONAR_MAX);
+            obj.sLvalid = (sL ~= 0) && (sL <= obj.SONAR_MAX);
+            obj.sRvalid = (sR ~= 0) && (sR <= obj.SONAR_MAX);
             
             % Absolute sonar positions
             ch = cos(h);
@@ -93,10 +94,10 @@ classdef RobotData < handle
             theta = linspace(0,2*pi,12);
             rx = obj.pos(1);
             ry = obj.pos(2);
-            cx = rx + obj.radius * cos(theta);
-            cy = ry + obj.radius * sin(theta);
-            hx = rx + [0 obj.radius * sin(obj.heading)];
-            hy = ry + [0 obj.radius * cos(obj.heading)];
+            cx = rx + obj.RADIUS * cos(theta);
+            cy = ry + obj.RADIUS * sin(theta);
+            hx = rx + [0 obj.RADIUS * sin(obj.heading)];
+            hy = ry + [0 obj.RADIUS * cos(obj.heading)];
             plot(cx, cy, 'color', 'm', 'linewidth', 2)
             plot(hx, hy, 'color', 'm', 'linewidth', 2)
 
