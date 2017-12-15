@@ -3,18 +3,18 @@
 //*************************************************************//
 
 //!t FireBot.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "FireBot.h"
+#include "RobotDims.h"
 #include "IndicatorLed.h"
 #include "Odometer.h"
 #include "Sonar.h"
-#include "DriveSystem.h"
 #include "WallFollower.h"
+#include "DriveSystem.h"
 #include "PanTilt.h"
 #include "MatlabComms.h"
 #include "BrushlessMotor.h"
-#include "RobotDims.h"
 
 //*************************************************************//
 // NAMESPACE FIELD DEFINITIONS
@@ -26,20 +26,19 @@ namespace FireBot {
 	const uint8_t PIN_FLAME_SENSOR = A0;
 	const uint8_t PIN_FAN = 8;
 
-	// Flame Finding Variables
+	// Flame Finding
 	const int FLAME_FOUND_THRESHOLD = 750;	// (ADC)
 	int minFlameRead = 0;	// (ADC)
 	float flamePan = 0;		// (rad)
 	float flameHeading = 0;	// (rad)
 	float flameTilt = 0;	// (rad)
-	Vec flamePos(3);		// (m)
+	Vec flamePos(3);		// In (x, y, z) format (m)
 
 	// Driving to Candle
 	const float CANDLE_DRIVE_DISTANCE = 0.25;	// (m)
 	const float CANDLE_DRIVE_SPEED = 0.15;		// (m/s)
 	const float CANDLE_BASE_RADIUS = 0.06;		// (m)
-	// float candleSonarDistance = 0;				// (m)
-	float candleDriveTime = 0;					// (s)
+	float candleDriveTime = 0;	// (s)
 	Timer candleDriveTimer;
 
 	// Flame Extinguishing
@@ -119,14 +118,14 @@ void FireBot::loop() {
 			if(flameDetected() &&
 				WallFollower::inPausableState())
 			{
-				PanTilt::stopTilt();
 				WallFollower::stop();
+				PanTilt::stopTilt();
 				PanTilt::setPan(0);
 				state = STATE_ZERO_PAN_SERVO;
 			}
 			break;
 
-		// Sero the pan servo in prep for heading sweep
+		// Zero the pan servo angle in prep for pan sweep.
 		case STATE_ZERO_PAN_SERVO:
 			if(PanTilt::isAimed()) {
 				minFlameRead = 1023;
@@ -135,7 +134,7 @@ void FireBot::loop() {
 			}
 			break;
 
-		// Rotate pan servo to determine flame heading
+		// Sweep pan servo to determine flame heading
 		case STATE_GET_FLAME_HEADING:
 			if(!PanTilt::isAimed()) {
 				int fr = analogRead(PIN_FLAME_SENSOR);
@@ -150,7 +149,7 @@ void FireBot::loop() {
 			}
 			break;
 
-		// Zero pan and turn robot to calculated flame heading
+		// Zero pan servo angle and turn robot towards flame
 		case STATE_TURN_TO_FLAME_HEADING:
 			if(DriveSystem::drive(flameHeading) &&
 				PanTilt::isAimed())
@@ -202,7 +201,7 @@ void FireBot::loop() {
 			}
 			break;
 
-		// Aim fan towards flame
+		// Aim fan at flame
 		case STATE_AIM_AT_FLAME:
 			if(PanTilt::isAimed()) {
 				fan.setSpeed(1.0);
@@ -230,7 +229,7 @@ void FireBot::loop() {
 			}
 			break;
 
-		// Drive back from candle to previous position
+		// Drive back from candle to wall-follow position
 		case STATE_BACK_FROM_CANDLE:
 			if(candleDriveTimer.hasElapsed(candleDriveTime)) {
 				DriveSystem::stop();
@@ -241,7 +240,7 @@ void FireBot::loop() {
 			}
 			break;
 
-		// Turn robot back towards wall it was following
+		// Turn robot back towards wall-following heading
 		case STATE_TURN_TO_WALL:
 			if(DriveSystem::drive(
 				WallFollower::targetHeading()))
@@ -277,7 +276,7 @@ void FireBot::loop() {
 	}
 }
 
-//!b Returns byte enumerating current state
+//!b Returns byte enumerating current robot state
 byte FireBot::getState() {
 	return (byte)state;
 }
@@ -293,7 +292,7 @@ bool FireBot::flameExtinguished() {
 	return analogRead(PIN_FLAME_SENSOR) > FLAME_OUT_THRESHOLD;
 }
 
-//!b Computes flame position x, y, z relative to origin.
+//!b Computes flame position (x, y, z) relative to field origin.
 //!d Stores result in 3-dimensional 'flamePos' vector.
 void FireBot::computeFlamePosition() {
 	float cy = CANDLE_DRIVE_DISTANCE + CANDLE_BASE_RADIUS;
@@ -308,29 +307,9 @@ void FireBot::computeFlamePosition() {
 }
 
 //!b Stops robot driving and flashes LED n times in a loop.
+//!d This is used to indicate Serial or I2C communication errors.
 void FireBot::error(uint8_t n) {
 	fan.setSpeed(0.0);
 	DriveSystem::stop();
 	IndicatorLed::flash(n);
-}
-
-//!b Prints flame sensor reading at Serial bud 115200.
-void FireBot::serialFlameReadTest() {
-	pinMode(PIN_FLAME_SENSOR, INPUT);
-
-	Serial.begin(115200);
-	Serial.println("Flame Sensor Reading Test");
-	Timer timer;
-	timer.tic();
-
-	while(1) {
-		if(timer.hasElapsed(0.2)) {
-			timer.tic();
-			Serial.println("Read: " + String(
-				analogRead(PIN_FLAME_SENSOR)));
-			if(flameDetected()) {
-				Serial.println("Flame detected!");
-			}
-		}
-	}
 }

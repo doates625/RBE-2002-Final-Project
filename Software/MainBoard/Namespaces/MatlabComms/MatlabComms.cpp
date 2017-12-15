@@ -3,16 +3,15 @@
 //**************************************************************/
 
 //!t MatlabComms.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "MatlabComms.h"
-#include "Hc06.h"
-#include "BinarySerial.h"
+#include "FireBot.h"
+#include "WallFollower.h"
 #include "Odometer.h"
 #include "Sonar.h"
-#include "DriveSystem.h"
-#include "WallFollower.h"
-#include "FireBot.h"
+#include "Hc06.h"
+#include "BinarySerial.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -28,7 +27,7 @@ namespace MatlabComms {
 	const float
 		TIMEOUT = 1.0; // (s)
 
-	// Byte Message Definitions
+	// Message Type Byte Definitions
 	const byte BYTE_CONNECT = 0x01;
 	const byte BYTE_GETDATA = 0x02;
 	const byte BYTE_DISCONNECT = 0x03;
@@ -46,7 +45,7 @@ namespace MatlabComms {
 
 //!b Initializes namespace and tests connection to Hc06.
 //!d Call this method in the main setup function.
-//!d Returns true or false indicating Hc06 connection status.
+//!d Returns true of Hc06 is properly connected.
 bool MatlabComms::setup() {
 	if(hc06.setup()) {
 		bSerial.setup();

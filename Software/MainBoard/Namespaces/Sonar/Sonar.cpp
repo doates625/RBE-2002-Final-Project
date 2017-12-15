@@ -3,14 +3,13 @@
 //**************************************************************/
 
 //!t SonarComms.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "Sonar.h"
 #include "RobotDims.h"
 #include "HcSr04Array.h"
 #include "HcSr04.h"
 #include "PinChangeInt.h"
-#include "Timer.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -131,26 +130,4 @@ float Sonar::pingFront() {
 //!b Performs interrupt service routine for sonar.
 void Sonar::isr() {
 	sensors.isr();
-}
-
-//!b Sets up sonar and prints out values on Serial 115200.
-void Sonar::serialTest() {
-	setup();
-	Serial.begin(115200);
-	Serial.println("Sonar Test");
-
-	Timer timer;
-	timer.tic();
-
-	while(1) {
-		loop();
-		if(timer.hasElapsed(0.2)) {
-			timer.tic();
-			Serial.println();
-			Serial.println("F: " + String(distF));
-			Serial.println("B: " + String(distB));
-			Serial.println("L: " + String(distL));
-			Serial.println("R: " + String(distR));
-		}
-	}
 }

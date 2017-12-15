@@ -3,7 +3,7 @@
 //**************************************************************/
 
 //!t MotorL.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "MotorL.h"
 

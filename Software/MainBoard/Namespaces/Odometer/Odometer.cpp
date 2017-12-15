@@ -3,14 +3,14 @@
 //**************************************************************/
 
 //!t Odometer.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "Odometer.h"
-#include "Bno055.h"
-#include "Timer.h"
+#include "RobotDims.h"
 #include "MotorL.h"
 #include "MotorR.h"
-#include "RobotDims.h"
+#include "Bno055.h"
+#include "Timer.h"
 
 //**************************************************************/
 // NAMESPACE FIELD DEFINITIONS
@@ -18,8 +18,8 @@
 
 namespace Odometer {
 
-	// Home Distance Tolerance (m)
-	const float HOME_DISTANCE_MAX = 0.3;
+	// Home Distance Threshold (m)
+	const float HOME_DISTANCE_THRESHOLD = 0.3;
 
 	// Position Variables
 	Vec position(2);	// Robot position vector (x,y) (m)
@@ -45,7 +45,7 @@ namespace Odometer {
 
 //!b Initializes and zeroes IMU.
 //!d Call this method in the main setup function.
-//!d Returns true or false indicating IMU connection status.
+//!d Returns true if IMU is properly connected.
 bool Odometer::setup() {
 	if(imu.setup()) {
 		headingCalibration = imu.heading();
@@ -102,29 +102,5 @@ void Odometer::loop() {
 
 //!b Returns true if robot is near home (0,0) within a threshold.
 bool Odometer::nearHome() {
-	return norm(position) <= HOME_DISTANCE_MAX;
-}
-
-//!b Sets up and runs test of IMU at Serial 115200.
-void Odometer::serialTest() {
-	Serial.begin(115200);
-	Serial.println("IMU Test");
-
-	if(setup()) {
-		Serial.println("IMU Connected!");
-	} else {
-		Serial.println("IMU Failed!");
-		while(1);
-	}
-
-	Timer timer;
-	timer.tic();
-
-	while(1) {
-		loop();
-		if(timer.hasElapsed(0.2)) {
-			timer.tic();
-			Serial.println("H: " + String(heading));
-		}
-	}
+	return norm(position) <= HOME_DISTANCE_THRESHOLD;
 }

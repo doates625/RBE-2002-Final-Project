@@ -3,7 +3,7 @@
 //**************************************************************/
 
 //!t WallFollower.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "WallFollower.h"
 #include "Sonar.h"
@@ -17,28 +17,27 @@
 
 namespace WallFollower {
 
-	// Arduino Pin Definitions
+	// Arduino Pin Settings
 	const uint8_t PIN_CLIFFSENSE_L = A10;
 	const uint8_t PIN_CLIFFSENSE_R = A11;
 
 	// Wall-following Parameters
-	const float WALL_DISTANCE 		 = 0.23;	// (m)
+	const float WALL_DISTANCE 		 = 0.23;	// From VTC (m)
 	const float LEFT_WALL_TOLERANCE  = 0.1;		// (m)
 	const float FRONT_WALL_TOLERANCE = 0.02;	// (m)
 	const float DRIVE_VELOCITY_MAX	 = 0.15;	// (m/s)
-	const float PRE_TURN_DIST		 = 0.047;	// (m)
-	const float CLIFF_BACK_DIST 	 =
+	const float PRE_TURN_DISTANCE	 = 0.047;	// (m)
+	const float CLIFF_BACK_DISTANCE  =
 		WALL_DISTANCE - 0.0353;				// (m)
 	const float WALL_CHECK_DIST = 0.062;	// (m)
-	const float PID_RESET_TIME  = 0.2;		// (s)
 
 	// Derived Parameters
 	const float PRE_TURN_TIME 	=
-		PRE_TURN_DIST / DRIVE_VELOCITY_MAX; 	// (s)
+		PRE_TURN_DISTANCE / DRIVE_VELOCITY_MAX; 	// (s)
 	const float CLIFF_BACK_TIME =
-		CLIFF_BACK_DIST / DRIVE_VELOCITY_MAX; 	// (s)
+		CLIFF_BACK_DISTANCE / DRIVE_VELOCITY_MAX; 	// (s)
 	const float WALL_CHECK_TIME =
-		WALL_CHECK_DIST / DRIVE_VELOCITY_MAX;  	// (s)
+		WALL_CHECK_DIST / DRIVE_VELOCITY_MAX;  		// (s)
 
 	// Wall-Following State
 	enum state_t {
@@ -52,15 +51,15 @@ namespace WallFollower {
 		TURN_RIGHT = 8,
 	} state, pausedState;
 	enum direction_t {
-		POS_Y,
-		POS_X,
-		NEG_Y,
-		NEG_X,
+		POS_Y, // +y
+		POS_X, // -y
+		NEG_Y, // +x
+		NEG_X, // -x
 	} direction;
 	Timer timer;
 
 	// Left wall-following PID Controller
-	// Input: Wall distance (m)
+	// Input: Left wall distance to VTC (m)
 	// Output: Heading change (rad)
 	const float L_KP = 3.5;
 	const float L_KI = 0;
@@ -68,21 +67,26 @@ namespace WallFollower {
 	const float MAX_HEADING_CHANGE = 0.2;
 	PidController leftWallPid(L_KP, L_KI, L_KD,
 		-MAX_HEADING_CHANGE,
-		+MAX_HEADING_CHANGE,
-		PID_RESET_TIME);
+		+MAX_HEADING_CHANGE);
 	float headingOffset = 0;
 	float driveHeading = 0;
 
 	// Front wall distance PID controller
-	// Input: Wall distance (m)
+	// Input: Front wall distance to VTC (m)
 	// Output: Forward drive velocity (m/s)
 	const float F_KP = 1.5;
 	const float F_KI = 0;
 	const float F_KD = 0;
 	PidController frontWallPid(F_KP, F_KI, F_KD,
-		0, DRIVE_VELOCITY_MAX,
-		PID_RESET_TIME);
+		0, DRIVE_VELOCITY_MAX);
 	float driveVelocity = DRIVE_VELOCITY_MAX;
+
+	// Private Function Templates
+	bool nearLeftWall();
+	bool nearFrontWall();
+	bool nearCliff();
+	void setDirectionLeft();
+	void setDirectionRight();
 }
 
 //**************************************************************/
@@ -114,12 +118,6 @@ void WallFollower::stop() {
 	state = STOPPED;
 }
 
-//!b Returns byte indicating current state.
-//!d See state enumeration above for mapping details.
-byte WallFollower::getState() {
-	return (byte)state;
-}
-
 //!b Returns true if robot is near left wall.
 //!d If left sonar is invalid, assumes true.
 bool WallFollower::nearLeftWall() {
@@ -144,7 +142,7 @@ bool WallFollower::nearFrontWall() {
 	}
 }
 
-//!b Returns true if robot is near cliff.
+//!b Returns true if robot is near a cliff.
 bool WallFollower::nearCliff() {
 	return
 		analogRead(PIN_CLIFFSENSE_L) >= 500 ||
@@ -233,7 +231,7 @@ void WallFollower::loop() {
 			}
 			break;
 
-		// Make a left turn
+		// Make a 90-degree left turn
 		case TURN_LEFT:
 			if(DriveSystem::drive(targetHeading())) {
 				state = POST_TURN;
@@ -271,13 +269,19 @@ void WallFollower::loop() {
 			}
 			break;
 
-		// Make a right turn
+		// Make a 90-degree right turn
 		case TURN_RIGHT:
 			if(DriveSystem::drive(targetHeading())) {
 				state = POST_TURN;
 			}
 			break;
 	}
+}
+
+//!b Returns byte indicating current state.
+//!d See state enumeration above for mapping details.
+byte WallFollower::getState() {
+	return (byte)state;
 }
 
 //!b Returns true if wall follower can be paused without issues.
@@ -287,7 +291,7 @@ bool WallFollower::inPausableState() {
 		state == POST_TURN;
 }
 
-//!b Returns target heading (rad) based on current direction.
+//!b Returns heading (rad) based on wall-following direction.
 float WallFollower::targetHeading() {
 	switch(direction) {
 		case POS_Y: return 0.000000;
@@ -298,7 +302,7 @@ float WallFollower::targetHeading() {
 	return 0;
 }
 
-//!b Sets direction to 90 degrees to the left.
+//!b Sets wall-following direction to 90 degrees to the left.
 void WallFollower::setDirectionLeft() {
 	switch(direction) {
 		case POS_Y: direction = NEG_X; break;
@@ -308,33 +312,12 @@ void WallFollower::setDirectionLeft() {
 	}
 }
 
-//!b Sets direction to 90 degrees to the right.
+//!b Sets wall-following direction to 90 degrees to the right.
 void WallFollower::setDirectionRight() {
 	switch(direction) {
 		case POS_Y: direction = POS_X; break;
 		case POS_X: direction = NEG_Y; break;
 		case NEG_Y: direction = NEG_X; break;
 		case NEG_X: direction = POS_Y; break;
-	}
-}
-
-//!b Runs test of cliff sensor at Serial 115200
-void WallFollower::serialTest() {
-	setup();
-	Serial.begin(115200);
-	Serial.println("Cliff Sensor Test");
-
-	Timer timer;
-	timer.tic();
-
-	while(1) {
-		if(timer.hasElapsed(0.2)) {
-			timer.tic();
-			Serial.println("L: " + String(
-				analogRead(PIN_CLIFFSENSE_L)));
-			Serial.println("R: " + String(
-				analogRead(PIN_CLIFFSENSE_R)));
-			Serial.println("Cliff Status: " + String(nearCliff()));
-		}
 	}
 }

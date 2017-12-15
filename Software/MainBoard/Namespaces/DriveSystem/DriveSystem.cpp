@@ -3,7 +3,7 @@
 //**************************************************************/
 
 //!t DriveSystem.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "DriveSystem.h"
 #include "MotorL.h"
@@ -88,12 +88,6 @@ bool DriveSystem::drive(float ht, float vt) {
 
 	// Check if robot is at heading steady state
 	return headingPid.steadyState(0.02, 0.002);
-}
-
-//!b Resets PID controllers in namespace
-void DriveSystem::resetPids() {
-	headingPid.reset();
-	velPid.reset();
 }
 
 //!b Immediately stops drive motors and resets PID controllers.

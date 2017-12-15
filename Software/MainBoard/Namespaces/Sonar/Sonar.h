@@ -4,7 +4,7 @@
 
 //!t SonarComms.h
 //!b Namespace for final project sonar system.
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 //!d This namespace handles the sonar system of the robot,
 //!d which consists of 4 Hc-Sr04 sonar sensors mounted at the
@@ -29,6 +29,4 @@ namespace Sonar {
 	void setup();
 	void loop();
 	float pingFront();
-
-	void serialTest();
 }

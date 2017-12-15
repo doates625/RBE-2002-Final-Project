@@ -4,10 +4,11 @@
 
 //!t WallFollower.h
 //!b Namespace for final project robot wall following algorithm.
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
-//!d This namespace utilizes sonar, odometry, and a cliff sensor
-//!d to perform left-sided wall following.
+//!d This namespace utilizes information from sonar, odometry,
+//!d and a cliff sensor to perform left-sided wall-following via
+//!d direct control of the drive system.
 
 #pragma once
 #include "DriveSystem.h"
@@ -20,18 +21,9 @@ namespace WallFollower {
 	void setup();
 	void start();
 	void stop();
-	byte getState();
-
-	bool nearLeftWall();
-	bool nearFrontWall();
-	bool nearCliff();
 	void loop();
 
+	byte getState();
 	bool inPausableState();
-
 	float targetHeading();
-	void setDirectionLeft();
-	void setDirectionRight();
-
-	void serialTest();
 }

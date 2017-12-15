@@ -4,12 +4,10 @@
 
 //!t RobotDims.h
 //!b Namespace for final project robot physical dimensions.
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 //!d This namespace contains all physical dimensions of the
-//!d robot relevant to internal mathematical operations. It also
-//!d contains a function to calculate the absolute position of
-//!d the flame once it has been found.
+//!d robot relevant to internal computations.
 
 #pragma once
 #include "LinearAtmel.h"

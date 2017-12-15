@@ -3,7 +3,7 @@
 //**************************************************************/
 
 //!t PanTilt.cpp
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
 #include "PanTilt.h"
 #include "OpenLoopServo.h"
@@ -43,9 +43,9 @@ namespace PanTilt {
 	} panState;
 
 	// Tilt System
-	const float TILT_MIN = -PI/6.0;		// rad
-	const float TILT_MAX = +PI/4.0;		// rad
-	const float TILT_VEL = 3.5;	// rad/s
+	const float TILT_MIN = -PI/6.0;	// rad
+	const float TILT_MAX = +PI/4.0;	// rad
+	const float TILT_VEL = 3.5;		// rad/s
 
 	float tilt = 0;
 	OpenLoopServo tiltServo(
@@ -66,10 +66,10 @@ namespace PanTilt {
 // NAMESPACE FUNCTION DEFINITIONS
 //**************************************************************/
 
-//!b Initializes sweep state machines and servos to 0 angles.
+//!b Initializes sweep state machines and servos.
 void PanTilt::setup() {
 
-	// Initialize servos and fan
+	// Set up servo controllers and zero the angles.
 	panServo.setup(0);
 	tiltServo.setup(0);
 
@@ -135,7 +135,7 @@ void PanTilt::setPan(float p) {
 	panServo.setAngle(p);
 }
 
-//!b Directs tilt serv to rotate to given angle (rad).
+//!b Directs tilt servo to rotate to given angle (rad).
 void PanTilt::setTilt(float t) {
 	tiltServo.setAngle(t);
 }

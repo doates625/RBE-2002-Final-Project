@@ -4,12 +4,11 @@
 
 //!t PanTilt.h
 //!b Namespace for final project pan-tilt servo system.
-//!a RBE-2002 B17 Team 10
+//!a Dan Oates (RBE-2002 B17 Team 10)
 
-//!d This namespace controls the pan-tilt system, flame sensor,
-//!d and fan for finding and putting out the flame. The pan-tilt
-//!d system consists of 2 DS3218 servos. The fan is controlled
-//!d by a brushless motor.
+//!d This namespace controls the pan-tilt system, consisting of
+//!d two DS3218 servo motors controlled via an open-loop servo
+//!d control library.
 
 #pragma once
 #include "Arduino.h"
