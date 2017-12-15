@@ -38,8 +38,8 @@ namespace PanTilt {
 		SERVO_VELOCITY_MAX);
 
 	enum {
-		PAN_RIGHT,
-		PAN_LEFT,
+		STATE_PAN_RIGHT,
+		STATE_PAN_LEFT,
 	} panState;
 
 	// Tilt System
@@ -57,8 +57,8 @@ namespace PanTilt {
 		SERVO_VELOCITY_MAX);
 
 	enum {
-		TILT_UP,
-		TILT_DOWN,
+		STATE_TILT_UP,
+		STATE_TILT_DOWN,
 	} tiltState;
 }
 
@@ -76,12 +76,12 @@ void PanTilt::setup() {
 	// Set up pan state machine
 	panServo.setVelocity(PAN_VEL);
 	panServo.setAngle(PAN_MAX);
-	panState = PAN_RIGHT;
+	panState = STATE_PAN_RIGHT;
 
 	// Set up tilt state machine
 	tiltServo.setVelocity(TILT_VEL);
 	tiltServo.setAngle(TILT_MAX);
-	tiltState = TILT_UP;
+	tiltState = STATE_TILT_UP;
 }
 
 //!b Runs open-loop servo loop functions.
@@ -97,34 +97,34 @@ void PanTilt::sweep() {
 
 	// Pan state machine
 	switch(panState) {
-		case PAN_RIGHT:	// Panning right
+		case STATE_PAN_RIGHT:	// Panning right
 			if(panServo.atTargetAngle()) {
 				panServo.setAngle(PAN_MIN);
-				panState = PAN_LEFT;
+				panState = STATE_PAN_LEFT;
 			}
 			break;
 
-		case PAN_LEFT:	// Panning left
+		case STATE_PAN_LEFT:	// Panning left
 			if(panServo.atTargetAngle()) {
 				panServo.setAngle(PAN_MAX);
-				panState = PAN_RIGHT;
+				panState = STATE_PAN_RIGHT;
 			}
 			break;
 	}
 
 	// Tilt state machine
 	switch(tiltState) {
-		case TILT_UP:	// Tilting up
+		case STATE_TILT_UP:	// Tilting up
 			if(tiltServo.atTargetAngle()) {
 				tiltServo.setAngle(TILT_MIN);
-				tiltState = TILT_DOWN;
+				tiltState = STATE_TILT_DOWN;
 			}
 			break;
 
-		case TILT_DOWN:	// Tilting down
+		case STATE_TILT_DOWN:	// Tilting down
 			if(tiltServo.atTargetAngle()) {
 				tiltServo.setAngle(TILT_MAX);
-				tiltState = TILT_UP;
+				tiltState = STATE_TILT_UP;
 			}
 			break;
 	}

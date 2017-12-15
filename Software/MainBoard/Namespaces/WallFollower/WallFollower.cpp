@@ -41,14 +41,14 @@ namespace WallFollower {
 
 	// Wall-Following State
 	enum state_t {
-		STOPPED = 1,
-		FORWARD = 2,
-		CHECK_LEFT = 3,
-		PRE_TURN_LEFT = 4,
-		TURN_LEFT = 5,
-		POST_TURN = 6,
-		BACK_FROM_CLIFF = 7,
-		TURN_RIGHT = 8,
+		STATE_STOPPED = 1,
+		STATE_FORWARD = 2,
+		STATE_CHECK_LEFT = 3,
+		STATE_PRE_TURN_LEFT = 4,
+		STATE_TURN_LEFT = 5,
+		STATE_POST_TURN = 6,
+		STATE_BACK_FROM_CLIFF = 7,
+		STATE_TURN_RIGHT = 8,
 	} state, pausedState;
 	enum direction_t {
 		POS_Y, // +y
@@ -99,7 +99,7 @@ void WallFollower::setup() {
 	pinMode(PIN_CLIFFSENSE_L, INPUT);
 	pinMode(PIN_CLIFFSENSE_R, INPUT);
 	direction = POS_Y;
-	pausedState = FORWARD;
+	pausedState = STATE_FORWARD;
 	start();
 }
 
@@ -115,7 +115,7 @@ void WallFollower::stop() {
 	DriveSystem::stop();
 	pausedState = state;
 	timer.pause();
-	state = STOPPED;
+	state = STATE_STOPPED;
 }
 
 //!b Returns true if robot is near left wall.
@@ -154,11 +154,11 @@ void WallFollower::loop() {
 	switch(state) {
 
 		// Stopped (no movement)
-		case STOPPED:
+		case STATE_STOPPED:
 			break;
 
 		// Driving forwards
-		case FORWARD:
+		case STATE_FORWARD:
 			// Wall following
 			if(Sonar::distL != 0) {
 				headingOffset = leftWallPid.update(
@@ -180,99 +180,99 @@ void WallFollower::loop() {
 			if(nearCliff()) {
 				stop();
 				timer.tic();
-				state = BACK_FROM_CLIFF;
+				state = STATE_BACK_FROM_CLIFF;
 			}
 			if(!nearLeftWall()) {
 				timer.tic();
-				state = CHECK_LEFT;
+				state = STATE_CHECK_LEFT;
 			}
 			if(nearFrontWall()) {
 				setDirectionRight();
-				state = TURN_RIGHT;
+				state = STATE_TURN_RIGHT;
 			}
 			break;
 
 		// Drive straight then re-check left side
-		case CHECK_LEFT:
+		case STATE_CHECK_LEFT:
 			DriveSystem::drive(
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
 				stop();
 				timer.tic();
-				state = BACK_FROM_CLIFF;
+				state = STATE_BACK_FROM_CLIFF;
 			}
 			if(nearLeftWall()) {
 				driveVelocity = DRIVE_VELOCITY_MAX;
-				state = FORWARD;
+				state = STATE_FORWARD;
 			} else if(timer.hasElapsed(WALL_CHECK_TIME)) {
 				timer.tic();
-				state = PRE_TURN_LEFT;
+				state = STATE_PRE_TURN_LEFT;
 			}
 			break;
 
 		// Drive forwards before left turn
-		case PRE_TURN_LEFT:
+		case STATE_PRE_TURN_LEFT:
 			DriveSystem::drive(
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
 				stop();
 				timer.tic();
-				state = BACK_FROM_CLIFF;
+				state = STATE_BACK_FROM_CLIFF;
 			}
 			if(nearFrontWall()) {
 				setDirectionRight();
-				state = TURN_RIGHT;
+				state = STATE_TURN_RIGHT;
 			}
 			if(timer.hasElapsed(PRE_TURN_TIME)) {
 				setDirectionLeft();
-				state = TURN_LEFT;
+				state = STATE_TURN_LEFT;
 			}
 			break;
 
 		// Make a 90-degree left turn
-		case TURN_LEFT:
+		case STATE_TURN_LEFT:
 			if(DriveSystem::drive(targetHeading())) {
-				state = POST_TURN;
+				state = STATE_POST_TURN;
 			}
 			break;
 
 		// Drive forwards after a turn
-		case POST_TURN:
+		case STATE_POST_TURN:
 			DriveSystem::drive(
 				targetHeading(),
 				DRIVE_VELOCITY_MAX);
 			if(nearCliff()) {
 				stop();
 				timer.tic();
-				state = BACK_FROM_CLIFF;
+				state = STATE_BACK_FROM_CLIFF;
 			}
 			if(nearLeftWall()) {
 				driveVelocity = DRIVE_VELOCITY_MAX;
-				state = FORWARD;
+				state = STATE_FORWARD;
 			}
 			if(nearFrontWall()) {
 				setDirectionRight();
-				state = TURN_RIGHT;
+				state = STATE_TURN_RIGHT;
 			}
 			break;
 
 		// Back away from a cliff
-		case BACK_FROM_CLIFF:
+		case STATE_BACK_FROM_CLIFF:
 			DriveSystem::drive(
 				targetHeading(),
 				-DRIVE_VELOCITY_MAX);
 			if(timer.hasElapsed(CLIFF_BACK_TIME)) {
 				setDirectionRight();
-				state = TURN_RIGHT;
+				state = STATE_TURN_RIGHT;
 			}
 			break;
 
 		// Make a 90-degree right turn
-		case TURN_RIGHT:
+		case STATE_TURN_RIGHT:
 			if(DriveSystem::drive(targetHeading())) {
-				state = POST_TURN;
+				state = STATE_POST_TURN;
 			}
 			break;
 	}
@@ -287,8 +287,8 @@ byte WallFollower::getState() {
 //!b Returns true if wall follower can be paused without issues.
 bool WallFollower::inPausableState() {
 	return
-		state == FORWARD ||
-		state == POST_TURN;
+		state == STATE_FORWARD ||
+		state == STATE_POST_TURN;
 }
 
 //!b Returns heading (rad) based on wall-following direction.
