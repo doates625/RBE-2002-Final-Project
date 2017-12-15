@@ -1,6 +1,6 @@
 classdef RobotComms < handle
     %ROBOTCOMMS Bluetooth communication system for RBE-2002 robot.
-    %   Created by RBE-2002 B17 Team 10.
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
     %   
     %   The robot communicates with Matlab over an Hc-06 Bluetooth module.
     %   They communicate via basic serial messages beginning with a byte
@@ -9,13 +9,6 @@ classdef RobotComms < handle
     %   errors.
     %   
     %   See also: ROBOTDATA
-    
-    properties (Access = private)
-        name;       % Name of Bluetooth module (string)
-        channel;    % Bluetooth channel (number)
-        port;       % Bluetooth serial port object
-        serial;     % Arduino serial interface object
-    end
     
     properties (Access = private, Constant)
         TIMEOUT = 1.0;  % Byte message timeout (s).
@@ -27,12 +20,16 @@ classdef RobotComms < handle
     end
     
     properties (Access = private)
-        wallFollowing = false;  % True if robot is currently wall-following
+        name;       % Name of Bluetooth module (string)
+        channel;    % Bluetooth channel (number)
+        port;       % Bluetooth serial port object
+        serial;     % Arduino serial interface object
     end
     
     methods
         function obj = RobotComms(name, channel)
             % Constructs communication system over bluetooth module.
+            % Inputs:
             %   name = name of bluetooth module
             %   channel = channel of bluetooth module
             obj.name = name;
@@ -40,12 +37,12 @@ classdef RobotComms < handle
         end
         function [s, msg] = connect(obj)
             % Attempts connection to robot bluetooth module.
+            % Inputs:
             %   s = connection status (1 for good, 0 for failure)
             %   msg = string message relating to connection status
+            
             obj.port = Bluetooth(obj.name, obj.channel);
             obj.serial = ArduinoSerial(obj.port);
-            
-            % Attempt connection
             try
                 obj.serial.open();
                 s = 1;
@@ -61,6 +58,7 @@ classdef RobotComms < handle
             % Sends begin message to robot and waits for acknowledge.
             %   s = acknowledge status (1 for success, 0 for failure)
             %   error = '' or error message string if connection failed
+            
             s = 0;
             error = '';
             
@@ -82,10 +80,11 @@ classdef RobotComms < handle
             s = 1;
         end
         function [rd, s, error] = getData(obj)
-            % Requests data on robot state (position, heading, sonar, etc.)
+            % Requests data on robot (state, odometry, sonar, etc.)
             %   rd = RobotData class containing current robot data
             %   s = data response status (1 for ok, 0 for failure)
             %   error = '' or error message string relating to failure
+            
             s = 0;
             error = '';
             
@@ -105,7 +104,7 @@ classdef RobotComms < handle
                 return
             end
                
-            % Read robot data if all went well
+            % If data was properly received
             s = 1;
             
             % Read Robot State
@@ -127,21 +126,21 @@ classdef RobotComms < handle
                 case 14, robotState = 'At home';
                 otherwise, robotState = 'INVALID STATE';
             end
+            
+            % Deduce Flame Status
             if stateByte == 1
                 flameStatus = 'Not Found';
-            end
-            if stateByte >= 2
-                flameStatus = 'Found';
-            end
-            if stateByte >= 12
-                flameStatus = 'Extinguished';
+            elseif stateByte >= 2
+                if stateByte >= 12
+                    flameStatus = 'Extinguished';
+                else
+                    flameStatus = 'Found';
+                end
             end
             
             % Read Wall Follower State
-            obj.wallFollowing = true;
             switch obj.serial.readByte()
                 case 1, wallFollowerState = 'Stopped';
-                    obj.wallFollowing = false;
                 case 2, wallFollowerState = 'Following left wall';
                 case 3, wallFollowerState = 'Checking left side';
                 case 4, wallFollowerState = 'Preparing for left turn';
@@ -152,7 +151,7 @@ classdef RobotComms < handle
                 otherwise, wallFollowerState = 'INVALID STATE';
             end
             
-            % Read Mathematical Information
+            % Read Remaining Information
             x = obj.serial.readFloat();
             y = obj.serial.readFloat();
             h = obj.serial.readFloat();

@@ -1,10 +1,11 @@
 %ROBOTCONSOLE Function for RBE-2002 Final Project Robot
-%   Created by RBE-2002 B17 Team 10.
+%   Created by Dan Oates (RBE-2002 B17 Team 10).
 %   
-%   This function handles the robot user-interface, Bluetooth,
-%   and SLAM for field mapping and position correction.
+%   This function runs the robot user-interface, Bluetooth communication,
+%   and field mapping. It can also 'replay' the previous field run from the
+%   file 'RobotLog.mat'.
 %
-%   See also: ROBOTUI, ROBOTCOMMS, ROBOTDATA, MAPBUILDER
+%   See also: ROBOTDATA, ROBOTUI, ROBOTCOMMS, MAPBUILDER
 
 %% Initialization
 % Clear workspace
@@ -27,6 +28,7 @@ replay = 0;
 while 1
     displayTitle('Awaiting Input');
 
+    % Connect Button Pressed
     if ui.connectButton()
         disp('Connecting to robot...')
         [s, msg] = robot.connect();
@@ -38,14 +40,20 @@ while 1
             robot.disconnect();
             return
         end
+        
+    % Replay Button Pressed
     elseif ui.replayButton()
         disp('Replaying last robot run...')
         replay = 1;
         pause(1)
         break
+        
+    % Disconnect Button Pressed
     elseif ui.disconnectButton()
         disp('Program terminated.')
         return
+        
+    % Text Prompt
     else
         disp('Press ''Connect'' to connect to robot.')
         disp('Press ''Replay'' to simulate last run.')
@@ -56,7 +64,7 @@ while 1
 end
 
 %% Second User Input
-% Runs only if robot is connected to.
+% Only runs if robot is connected to via Bluetooth.
 % Options:
 % - Begin robot operations
 % - Disconnect from robot
@@ -64,6 +72,7 @@ if ~replay
     while 1
         displayTitle('Awaiting Input');
 
+        % Begin Button Pressed
         if ui.beginButton()
             [s, error] = robot.start();
             if s == 0
@@ -72,10 +81,14 @@ if ~replay
                 return
             end
             break
+            
+        % Disconnect Button Pressed
         elseif ui.disconnectButton()
             disp('Disconnected.')
             robot.disconnect();
             return
+            
+        % Text Prompt
         else 
             disp('Press ''Begin'' to begin autonomous.')
             disp('Press ''Disconnect'' to terminate program.')
@@ -88,10 +101,12 @@ end
 %% Robot Loop (Autonomous or Replay)
 % Initialization
 loop = 1;
-if ~replay  
+if ~replay
+    % Create empty array of robot data for log
     maxLoops = 10000;
     robotLog = RobotData.empty(0, maxLoops);
 else
+    % Load robot log from Matlab file
     logFile = load(logName, 'robotLog');
     robotLog = logFile.robotLog;
     clear('logFile')
@@ -101,26 +116,28 @@ end
 % Loop
 while 1
     if ~replay
-        % Autonomous loop
+        % Autonomous Loop
         displayTitle('Autonomous Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         disp(' ')
         
-        % Get odometry data and update map
+        % Get robot data and update map
         [rd, s, error] = robot.getData();
         if s == 0
             disp(error)
             robot.disconnect();
             break
         end
+        
+        % Add robot data to log
         robotLog(loop) = rd;
     else
-        % ReplaylLoop
+        % Replay Loop
         displayTitle('Replay Mode');
         disp(['Loop: ' int2str(loop) '/' int2str(maxLoops)])
         disp(' ')
         
-        % Get recorded robot data
+        % Get recorded robot data from log
         rd = robotLog(loop);
     end
 
@@ -187,13 +204,13 @@ end
 
 %% Post Robot Loop
 
-% Save robot log for replays
+% Save robot log if not a replay
 if ~replay
     save(logName, 'robotLog');
     disp(['Robot log saved in ''' logName ''''])
 end
 
-%% Helper Functions
+%% Support Functions
 
 function displayTitle(subtitle)
     % Clears command line and displays program title and subtitle

@@ -1,6 +1,6 @@
 classdef RobotUI < handle
     %ROBOTUI User interface for RBE-2002 robot.
-    %   Created by RBE-2002 B17 Team 10.
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
     %   
     %   This UI consists of:
     %       - A figure title
@@ -8,17 +8,19 @@ classdef RobotUI < handle
     %       - Button to begin robot movement
     %       - Button to shut down and disconnect from robot
     %       - Button to replay last robot run
-    %       - Plot of robot position and heading with wall estimations
+    %       - Plot of robot with wall estimations
     %   The update method continuously sets the figure to the right half of
     %   the screen, leaving room for the command window on the left half.
     %   
     %   See also: ROBOTDATA
     
+    properties (Access = private, Constant)
+        figurePosition = [0.5050 0.0533 0.4900 0.8533];   % On the screen
+        mapLimits = [-2.5, +2.5, -2.5, +2.5];   % Field map limits (m)   
+        robotRadius = 0.125;                    % For robot plot (m)
+    end
+    
     properties (Access = private)
-        
-        % Figure Constants
-        figurePosition = [809, 49, 784, 768];   % On the screen
-        mapLimits = [-2.5, +2.5, -2.5, +2.5];   % Field map limits (m)
         
         % UI Handles
         fig;        % Figure handle
@@ -34,9 +36,6 @@ classdef RobotUI < handle
         bbPressed = 0;  % Begin
         dbPressed = 0;  % Disconnect
         rbPressed = 0;  % Replay
-        
-        % Mapping Aids
-        robotRadius = 0.125;    % Approximate robot radius (m)
     end
     
     methods (Access = public)
@@ -46,6 +45,7 @@ classdef RobotUI < handle
             % Matlab Figure
             obj.fig = figure(...
                 'Name', 'Robot Console', ...
+                'Units', 'normalized', ...
                 'Position', obj.figurePosition, ...
                 'Resize', 'off');
             
@@ -85,6 +85,22 @@ classdef RobotUI < handle
             % Force immediate drawing of UI
             drawnow
         end
+        function [p] = connectButton(obj)
+            % Returns 1 if button has been pressed since last UI update.
+            p = obj.cbPressed;
+        end
+        function [p] = beginButton(obj)
+            % Returns 1 if button has been pressed since last UI update.
+            p = obj.bbPressed;
+        end 
+        function [p] = disconnectButton(obj)
+            % Returns 1 if button has been pressed since last UI update.
+            p = obj.dbPressed;
+        end
+        function [p] = replayButton(obj)
+            % Returns 1 if button has been pressed since last UI update.
+            p = obj.rbPressed;
+        end
         function update(obj)
             % Redraws UI and resets pushbutton statuses
             obj.fig.Position = obj.figurePosition;
@@ -104,30 +120,10 @@ classdef RobotUI < handle
             % Force immediate drawing of UI
             drawnow
         end
-        function [p] = connectButton(obj)
-            % Returns 1 if button has been pressed since last UI update.
-            p = obj.cbPressed;
-            obj.cbPressed = 0;
-        end
-        function [p] = beginButton(obj)
-            % Returns 1 if button has been pressed since last UI update.
-            p = obj.bbPressed;
-            obj.bbPressed = 0;
-        end 
-        function [p] = disconnectButton(obj)
-            % Returns 1 if button has been pressed since last UI update.
-            p = obj.dbPressed;
-            obj.dbPressed = 0;
-        end
-        function [p] = replayButton(obj)
-            % Returns 1 if button has been pressed since last UI update.
-            p = obj.rbPressed;
-            obj.rbPressed = 0;
-        end
     end
     methods (Access = private)
         function [pf] = figPos(~, pi)
-            % Converts my preferred figure position format to Matlab
+            % Converts my preferred figure position format to Matlab's.
             pf = zeros(1, 4);
             pf(1) = pi(1);
             pf(2) = 1 - pi(4);

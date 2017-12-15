@@ -5,15 +5,15 @@ classdef SonarWallY < SonarWall
     %   See also: SONARWALL, SONARWALLX
     
     properties (Access = public)
-        xPos;   % x-position of wall (meters)
-        yMin;   % minimum y-position (meters)
-        yMax;   % maximum y-position (meters)
+        xPos;   % x-position of wall
+        yMin;   % minimum y-position
+        yMax;   % maximum y-position
     end
     
     methods (Access = public)
         function obj = SonarWallY(pos)
             % Constructs y-wall from given position vector.
-            % pos = Point to build wall from ([x; y])
+            % pos = Point to start wall from ([x; y])
             obj.xPos = pos(1);
             obj.yMin = pos(2);
             obj.yMax = pos(2);
@@ -27,8 +27,7 @@ classdef SonarWallY < SonarWall
                 (y <= obj.yMax + obj.edgeLimit);        
         end
         function addPoint(obj, point)
-            % Expands wall by adding point ([x; y]) to its hypothesis.
-            % Side is the side of the wall the point is on ('+x' or '-x').
+            % Expands wall by adding given point to its hypothesis.
             x = point(1);
             y = point(2);
             

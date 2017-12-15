@@ -1,6 +1,6 @@
 classdef MapBuilder < handle
     %MAPBUILDER Class for building field map for RBE-2002 final project.
-    %   Created by RBE-2002 B17 Team 10.
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
     %   
     %   This class contains a list of SonarWallX and SonarWallY which
     %   together form the field map.
@@ -55,6 +55,7 @@ classdef MapBuilder < handle
         end
         function plot(obj)
             % Plots all walls currently in the map on the current axes.
+            % Plots x-walls in blue and y-walls in green.
             for i = 1:length(obj.xWalls)
                 obj.xWalls(i).plot('-b');
             end
@@ -67,7 +68,6 @@ classdef MapBuilder < handle
         function addToXWalls(obj, point)
             % Adds point to one of the x-walls or creates a new one if
             % point doesn't fit in any existing x-walls.
-            % Side is side of the wall point is on ('+y' or '-y').
             for i = 1:length(obj.xWalls)
                 if obj.xWalls(i).fitsPoint(point)
                     obj.xWalls(i).addPoint(point);
@@ -79,7 +79,6 @@ classdef MapBuilder < handle
         function addToYWalls(obj, point)
             % Adds point to one of the y-walls or creates a new one if
             % point doesn't fit in any existing y-walls.
-            % Side is side of the wall point is on ('+x' or '-x').
             for i = 1:length(obj.yWalls)
                 if obj.yWalls(i).fitsPoint(point)
                     obj.yWalls(i).addPoint(point);

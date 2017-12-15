@@ -1,6 +1,6 @@
 classdef RobotData < handle
     %ROBOTDATA Data from firefighter robot at an instant in time.
-    %   Created by RBE-2002 B17 Team 10.
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
     %   
     %   This class is used in array form to log the data from the robot
     %   over an entire run for replay and post-processing purposes.
@@ -22,10 +22,10 @@ classdef RobotData < handle
         sonarL = [0; 0];    % Sonar position left
         sonarR = [0; 0];    % Sonar position right
         
-        flamePos = [0; 0; 0];   % Flame position
-        robotState = '';        % Robot state
-        wallFollowerState = ''; % Wall follower state
-        flameStatus = '';       % Flame status
+        flamePos = [0; 0; 0];   % Flame position ([x; y; z])
+        robotState = '';        % Robot state (string)
+        wallFollowerState = ''; % Wall follower state (string)
+        flameStatus = '';       % Flame status (string)
     end
     properties (Access = private, Constant)
         RADIUS = 0.14;      % Approximate robot radius (m)
@@ -36,6 +36,7 @@ classdef RobotData < handle
         function obj = RobotData(x, y, h, sF, sB, sL, sR, flamePos, ...
             robotState, wallFollowerState, flameStatus)
             % Constructs RobotData from given robot data.
+            % Inputs:
             %   x = x-position (m)
             %   y = y-position (m)
             %   h = heading (rad)
@@ -43,10 +44,14 @@ classdef RobotData < handle
             %   sB = back sonar distance (m)
             %   sL = left sonar distance (m)
             %   sR = right sonar distance (m)
+            %   
+            
             obj.pos = [x; y];
             obj.heading = h;
+            obj.flamePos = flamePos;
             
-            % Sonar distances are invalid if zero
+            % Sonar distances are invalid if zero or less than SONAR_MAX
+            % SONAR_MAX cutoff prevents floor-bounce data from being used
             obj.sFvalid = (sF ~= 0) && (sF <= obj.SONAR_MAX);
             obj.sBvalid = (sB ~= 0) && (sB <= obj.SONAR_MAX);
             obj.sLvalid = (sL ~= 0) && (sL <= obj.SONAR_MAX);
@@ -61,8 +66,7 @@ classdef RobotData < handle
             obj.sonarL = obj.pos + rh * [-sL; 0];
             obj.sonarR = obj.pos + rh * [+sR; 0];
             
-            % Robot states
-            obj.flamePos = flamePos;
+            % Robot state information
             obj.robotState = robotState;
             obj.wallFollowerState = wallFollowerState;
             obj.flameStatus = flameStatus;
@@ -85,6 +89,7 @@ classdef RobotData < handle
             end
         end
         function [wf] = isWallFollowing(obj)
+            % Returns 1 if robot is currently wall-following (else 0).
             wf = ~strcmp(obj.wallFollowerState, 'Stopped');
         end
         function plot(obj)
@@ -101,11 +106,13 @@ classdef RobotData < handle
             plot(cx, cy, 'color', 'm', 'linewidth', 2)
             plot(hx, hy, 'color', 'm', 'linewidth', 2)
 
-            % Plot sonar vectors from robot to walls
-            plot([rx obj.sonarF(1)], [ry obj.sonarF(2)], '--kx')
-            plot([rx obj.sonarB(1)], [ry obj.sonarB(2)], '--kx')
-            plot([rx obj.sonarL(1)], [ry obj.sonarL(2)], '--kx')
-            plot([rx obj.sonarR(1)], [ry obj.sonarR(2)], '--kx')
+            % Plot sonar vectors from robot to walls if wall-following
+            if obj.isWallFollowing()
+                plot([rx obj.sonarF(1)], [ry obj.sonarF(2)], '--kx')
+                plot([rx obj.sonarB(1)], [ry obj.sonarB(2)], '--kx')
+                plot([rx obj.sonarL(1)], [ry obj.sonarL(2)], '--kx')
+                plot([rx obj.sonarR(1)], [ry obj.sonarR(2)], '--kx')
+            end
         end
     end
 end

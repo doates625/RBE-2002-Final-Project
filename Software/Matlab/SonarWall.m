@@ -1,10 +1,11 @@
 classdef SonarWall < handle
     %SONARWALL Class for sonar wall hypotheses.
-    %   Created by RBE-2002 B17 Team 10.
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
     %   
     %   This class represents hypotheses for walls based on sonar and
     %   odometry data from the firefighter robot. Walls can be created
-    %   from a single point and expanded by adding nearby points.
+    %   from a single point and expanded by adding nearby points. All
+    %   distances are in meters.
     %   
     %   See also: SONARWALLX, SONARWALLY
     
@@ -21,10 +22,6 @@ classdef SonarWall < handle
     end
     
     methods
-        function [len] = getLength(~)
-            % Returns length of wall (overridden).
-            len = 0;
-        end
         function incrementAge(obj)
             % Adds 1 to age of wall and dormancy.
             obj.age = obj.age + 1;

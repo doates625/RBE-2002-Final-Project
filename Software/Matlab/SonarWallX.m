@@ -1,19 +1,19 @@
 classdef SonarWallX < SonarWall
     %SONARWALLX Class for sonar walls parallel to the x-axis.
-    %   Created by RBE-2002 B17 Team 10.
-    %   
+    %   Created by Dan Oates (RBE-2002 B17 Team 10).
+    %
     %   See also: SONARWALL, SONARWALLY
     
     properties (Access = public)
-        yPos;   % y-position of wall (meters)
-        xMin;   % minimum x-position (meters)
-        xMax;   % maximum x-position (meters)
+        yPos;   % y-position of wall
+        xMin;   % minimum x-position
+        xMax;   % maximum x-position
     end
     
     methods (Access = public)
         function obj = SonarWallX(pos)
             % Constructs x-wall from given position vector.
-            % pos = Point to build wall from ([x; y])
+            % pos = Point to start wall from ([x; y])
             obj.yPos = pos(2);
             obj.xMin = pos(1);
             obj.xMax = pos(1);
@@ -27,8 +27,7 @@ classdef SonarWallX < SonarWall
                 (x <= obj.xMax + obj.edgeLimit);
         end
         function addPoint(obj, point)
-            % Expands wall by adding point ([x; y]) to its hypothesis.
-            % Side is the side of the wall the point is on ('+y' or '-y').
+            % Expands wall by adding given point to its hypothesis.
             x = point(1);
             y = point(2);
             
