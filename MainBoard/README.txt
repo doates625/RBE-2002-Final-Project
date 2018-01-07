@@ -1,0 +1,3 @@
+INTRODUCTION
+
+This folder contains the entire Sloeber project (Sloeber is an Arduino eclipse plugin) used to develop the C++ code for the Arduino Mega 2560 which acted as the brains of the robot. The code file uploaded to the Arduino is <MainBoard.ino>, and the remaining code can be found in the <Namespaces> folder. All other content is Sloeber-specific and not relevant to the project. For details on the purpose and function of each namespace, see the <Report> folder in this repo.
