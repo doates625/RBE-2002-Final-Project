@@ -6,7 +6,7 @@ ORGANIZATION
 
 This repo is divided into three folders:
 
-- Main Board: All project-specific C++ code used in the robot (see Namespaces folder inside).
+- MainBoard: All project-specific C++ code used in the robot (see Namespaces folder inside).
 - Matlab: All project-specific Matlab code written for the UI, robot control, and mapping systems.
 - Report: The final report on the robot submitted by my team.
 
