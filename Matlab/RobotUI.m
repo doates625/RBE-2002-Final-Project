@@ -15,7 +15,7 @@ classdef RobotUI < handle
     %   See also: ROBOTDATA
     
     properties (Access = private, Constant)
-        figurePosition = [0.5050 0.0533 0.4900 0.8533];   % On the screen
+        figurePosition = [0.5005 0.0380 0.4990 0.8833];   % On the screen
         mapLimits = [-2.5, +2.5, -2.5, +2.5];   % Field map limits (m)   
         robotRadius = 0.125;                    % For robot plot (m)
     end
