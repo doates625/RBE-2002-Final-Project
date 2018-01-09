@@ -2,6 +2,11 @@ INTRODUCTION
 
 THis repo contains the code and report for my RBE-2002 final project at WPI. As part of a group of 3, I helped design a robot which navigates a maze, locates and extinguishes a candle, and reports its position in (X, Y, Z) distance from the robot's starting location. While I participated in most of the design process, my focus in the group was software design. I wrote 100% of the project-specific software for the robot. This included state machine design, odometry, and PID control systems implemented in C++, as well as Bluetooth robot communication and field mapping systems written in Matlab and executed on my laptop.
 
+DEMONSTRATION
+
+Here is a video of the robot in action:
+https://drive.google.com/file/d/1eUYwZ56eIEdoWziq4j76T4t6MXT2y-sI/view
+
 ORGANIZATION
 
 This repo is divided into three folders:
