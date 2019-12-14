@@ -5,7 +5,7 @@ THis repo contains the code and report for my RBE-2002 final project at WPI. As 
 DEMONSTRATION
 
 Here is a video of the robot in action:
-https://drive.google.com/file/d/1eUYwZ56eIEdoWziq4j76T4t6MXT2y-sI/view
+https://youtu.be/zyALkuPWBt8
 
 ORGANIZATION
 
